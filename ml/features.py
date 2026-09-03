@@ -1,75 +1,77 @@
-"""Feature engineering for the transaction-derived vulnerability model.
-
-The model deliberately avoids demographic and well-being fields from the
-reference dataset. Every feature here can be derived from account activity,
-balances, obligations, or income history.
-"""
+"""Transaction-derived feature engineering for the FlowGuard risk model."""
 from __future__ import annotations
 
 from statistics import mean, pstdev
 from typing import Any, Iterable
-from constants import RISK_TREND_SCORES
 
 FEATURE_NAMES = (
-    "income_volatility",
-    "income_trend_score",
-    "expense_burden",
-    "buffer_coverage",
-    "debt_service_burden",
-    "income_gap_ratio",
+    "income_volatility", "income_trend_score", "expense_burden", "buffer_coverage",
+    "debt_service_burden", "income_gap_ratio", "payment_frequency_variance",
+    "essential_spend_ratio",
 )
 
 
-def _amounts(values: Iterable[Any] | None) -> list[float]:
-    if not values:
-        return []
-    result = []
-    for item in values:
-        if isinstance(item, dict) and str(item.get("type", item.get("direction", "CREDIT"))).upper() in {"DEBIT", "EXPENSE", "OUTFLOW"}:
-            continue
-        value = item.get("amount", 0) if isinstance(item, dict) else item
-        try:
-            value = float(value)
-        except (TypeError, ValueError):
-            continue
-        if value >= 0:
-            result.append(value)
-    return result
+def _number(value: Any, default: float = 0.0) -> float:
+    try:
+        return max(0.0, float(value))
+    except (TypeError, ValueError):
+        return default
+
+
+def split_transactions(history: Iterable[Any] | None) -> tuple[list[float], list[float]]:
+    """Return non-negative credits and debits from mixed transaction records."""
+    credits, debits = [], []
+    for item in history or []:
+        if isinstance(item, dict):
+            amount = _number(item.get("amount", item.get("value", 0)))
+            direction = str(item.get("type", item.get("direction", "CREDIT"))).upper()
+            (debits if direction in {"DEBIT", "EXPENSE", "OUTFLOW", "WITHDRAWAL"} else credits).append(amount)
+        else:
+            amount = _number(item)
+            if amount:
+                credits.append(amount)
+    return credits, debits
 
 
 def _trend(values: list[float]) -> float:
-    """Return a bounded slope proxy: negative means income is falling."""
-    if len(values) < 2 or mean(values) == 0:
+    if len(values) < 2 or mean(values) <= 0:
         return 0.0
-    midpoint = len(values) // 2
-    earlier, recent = mean(values[:midpoint]), mean(values[midpoint:])
-    return max(-1.0, min(1.0, (recent - earlier) / max(1.0, mean(values))))
+    midpoint = max(1, len(values) // 2)
+    return max(-1.0, min(1.0, (mean(values[midpoint:]) - mean(values[:midpoint])) / mean(values)))
 
 
-def build_features(profile: dict, history: list[Any] | None = None) -> dict[str, float]:
-    """Build the six-feature model vector from a profile and optional income history."""
-    avg = max(1.0, float(profile.get("monthly_income_avg", 0)))
-    std = max(0.0, float(profile.get("monthly_income_std", 0)))
-    income = _amounts(history)
-    if len(income) >= 2:
-        avg = max(1.0, mean(income))
-        std = pstdev(income)
+def _payment_frequency_variance(history: list[Any] | None) -> float:
+    """Bounded proxy for irregular payment frequency when timestamps are absent."""
+    if not history:
+        return 0.5
+    credits, _ = split_transactions(history)
+    length_component = abs(len(history) - 6) / 6
+    amount_component = pstdev(credits) / mean(credits) if len(credits) > 1 and mean(credits) > 0 else 0.0
+    return min(2.0, max(0.0, 0.25 + length_component + amount_component))
 
-    expenses = max(0.0, float(profile.get("total_monthly_expenses", 0)))
-    fixed = max(0.0, float(profile.get("fixed_expenses", 0)))
-    buffer = max(0.0, float(profile.get("emergency_buffer", 0)))
-    debt = max(0.0, float(profile.get("monthly_emi", 0)))
-    trend_label = str(profile.get("income_trend", "STABLE")).upper()
-    label_score = RISK_TREND_SCORES.get(trend_label, 0.0)
-    trend_score = _trend(income) if len(income) >= 2 else label_score
 
+def build_features(profile: Any, history: list[Any] | None = None) -> dict[str, float]:
+    """Build the eight-feature model vector from profile and transactions."""
+    if hasattr(profile, "model_dump"):
+        profile = profile.model_dump()
+    profile = dict(profile or {})
+    credits, debits = split_transactions(history)
+    income = credits or [_number(profile.get("monthly_income_avg"))]
+    average_income = max(1.0, mean(income))
+    income_std = pstdev(income) if len(income) > 1 else _number(profile.get("monthly_income_std"))
+    expenses = sum(debits) if debits else _number(profile.get("total_monthly_expenses"))
+    fixed_expenses = _number(profile.get("fixed_expenses", expenses))
+    buffer = _number(profile.get("emergency_buffer", profile.get("savings_balance", 0)))
+    monthly_emi = _number(profile.get("monthly_emi"))
     return {
-        "income_volatility": min(2.0, std / avg),
-        "income_trend_score": trend_score,
-        "expense_burden": min(2.0, expenses / avg),
-        "buffer_coverage": min(2.0, buffer / max(1.0, fixed)),
-        "debt_service_burden": min(2.0, debt / avg),
-        "income_gap_ratio": min(2.0, max(0.0, expenses - avg) / avg),
+        "income_volatility": min(2.0, income_std / average_income),
+        "income_trend_score": _trend(income),
+        "expense_burden": min(2.0, expenses / average_income),
+        "buffer_coverage": min(2.0, buffer / max(1.0, fixed_expenses)),
+        "debt_service_burden": min(2.0, monthly_emi / average_income),
+        "income_gap_ratio": min(2.0, max(0.0, expenses - average_income) / average_income),
+        "payment_frequency_variance": _payment_frequency_variance(history),
+        "essential_spend_ratio": fixed_expenses / max(1.0, expenses),
     }
 
 
