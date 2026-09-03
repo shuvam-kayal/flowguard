@@ -1,0 +1,1 @@
+export function ErrorState({ message }: { message: string }) { return <div className="panel max-w-lg"><h2>Unable to load your financial data.</h2><p className="muted mt-2">{message}</p><button onClick={() => window.location.reload()} className="mt-5 rounded-lg bg-[#087344] px-4 py-2 text-sm font-bold text-white">Try again</button></div>; }

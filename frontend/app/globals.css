@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color: #16231a; background: #f6f8f5; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #f6f8f5; color: #16231a; font-family: Arial, Helvetica, sans-serif; }
+button, input, select { font: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #8dd7ae; outline-offset: 3px; }
+@layer components {
+  .panel { @apply rounded-2xl border border-[#e4ebe5] bg-white p-5 shadow-[0_8px_28px_rgba(21,48,30,.045)]; }
+  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[.12em] text-[#718078]; }
+  .muted { @apply text-sm text-[#718078]; }
+  .status-pill { @apply inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide; }
+}

@@ -1,0 +1,12 @@
+"use client";
+import { useScenario } from "@/components/layout/ScenarioProvider";
+import { SafeToSpendCard } from "./SafeToSpendCard";
+import { ResilienceScore } from "./ResilienceScore";
+import { FinancialWeather } from "./FinancialWeather";
+import { CashFlowChart } from "./CashFlowChart";
+import { UpcomingObligations } from "./UpcomingObligations";
+import { ActionCenter } from "./ActionCenter";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { formatINR } from "@/lib/formatters";
+export function DashboardScreen() { const { data, loading, error } = useScenario(); if (loading) return <div className="grid gap-5"><Skeleton className="h-36" /><Skeleton className="h-72" /></div>; if (error || !data) return <ErrorState message={error ?? "No dashboard data found."} />; const { resilience, forecast, worker } = data; return <><p className="eyebrow">Good morning, Ravi</p><h1 className="mt-1 text-3xl font-extrabold tracking-tight">Your financial health for today</h1><p className="muted mt-2">FlowGuard helps you protect cash flow before stress arrives.</p><div className="mt-7 grid gap-5 xl:grid-cols-[1.15fr_.85fr]"><SafeToSpendCard amount={resilience.safe_to_spend_daily} balance={worker.balance} /><div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1"><ResilienceScore score={resilience.resilience_score} days={resilience.resilience_days} /><FinancialWeather forecast={forecast} /></div></div><div className="mt-5 grid gap-5 xl:grid-cols-[1.15fr_.85fr]"><CashFlowChart points={forecast.points} /><UpcomingObligations items={data.obligations} /></div><div className="mt-5 grid gap-5 lg:grid-cols-2"><section className="panel"><p className="eyebrow">Emergency buffer</p><div className="mt-3 flex items-end justify-between"><h2>{formatINR(resilience.buffer_current)} <span className="text-base font-normal text-[#718078]">/ {formatINR(resilience.buffer_target)}</span></h2><span className="text-sm font-bold text-[#087344]">{Math.round(resilience.buffer_current / resilience.buffer_target * 100)}%</span></div><div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#edf2ee]"><div className="h-full rounded-full bg-[#23aa6b]" style={{ width: `${resilience.buffer_current / resilience.buffer_target * 100}%` }} /></div><p className="muted mt-3">Your first line of defence for essential expenses.</p></section><ActionCenter recommendations={data.recommendations} shock={data.scenario === "INCOME_SHOCK"} /></div></>; }
