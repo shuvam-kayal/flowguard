@@ -1,0 +1,121 @@
+{
+  "W001": {
+    "worker_id": "W001",
+    "upcoming_obligations": [
+      {
+        "name": "Rent",
+        "amount": 6600,
+        "due_date": "2026-09-15",
+        "category": "FIXED"
+      },
+      {
+        "name": "EMI",
+        "amount": 2000,
+        "due_date": "2026-09-10",
+        "category": "DEBT"
+      },
+      {
+        "name": "Electricity",
+        "amount": 1200,
+        "due_date": "2026-09-12",
+        "category": "UTILITY"
+      }
+    ],
+    "total_upcoming": 9800,
+    "essential_daily_spend": 491
+  },
+  "W002": {
+    "worker_id": "W002",
+    "upcoming_obligations": [
+      {
+        "name": "Rent",
+        "amount": 8400,
+        "due_date": "2026-09-15",
+        "category": "FIXED"
+      },
+      {
+        "name": "EMI",
+        "amount": 6500,
+        "due_date": "2026-09-10",
+        "category": "DEBT"
+      },
+      {
+        "name": "Electricity",
+        "amount": 1200,
+        "due_date": "2026-09-12",
+        "category": "UTILITY"
+      }
+    ],
+    "total_upcoming": 16100,
+    "essential_daily_spend": 599
+  },
+  "W003": {
+    "worker_id": "W003",
+    "upcoming_obligations": [
+      {
+        "name": "Rent",
+        "amount": 9600,
+        "due_date": "2026-09-15",
+        "category": "FIXED"
+      },
+      {
+        "name": "Electricity",
+        "amount": 1200,
+        "due_date": "2026-09-12",
+        "category": "UTILITY"
+      }
+    ],
+    "total_upcoming": 10800,
+    "essential_daily_spend": 699
+  },
+  "W004": {
+    "worker_id": "W004",
+    "upcoming_obligations": [
+      {
+        "name": "Rent",
+        "amount": 5400,
+        "due_date": "2026-09-15",
+        "category": "FIXED"
+      },
+      {
+        "name": "EMI",
+        "amount": 1500,
+        "due_date": "2026-09-10",
+        "category": "DEBT"
+      },
+      {
+        "name": "Electricity",
+        "amount": 1200,
+        "due_date": "2026-09-12",
+        "category": "UTILITY"
+      }
+    ],
+    "total_upcoming": 8100,
+    "essential_daily_spend": 370
+  },
+  "W005": {
+    "worker_id": "W005",
+    "upcoming_obligations": [
+      {
+        "name": "Rent",
+        "amount": 6000,
+        "due_date": "2026-09-15",
+        "category": "FIXED"
+      },
+      {
+        "name": "EMI",
+        "amount": 1200,
+        "due_date": "2026-09-10",
+        "category": "DEBT"
+      },
+      {
+        "name": "Electricity",
+        "amount": 1200,
+        "due_date": "2026-09-12",
+        "category": "UTILITY"
+      }
+    ],
+    "total_upcoming": 8400,
+    "essential_daily_spend": 424
+  }
+}

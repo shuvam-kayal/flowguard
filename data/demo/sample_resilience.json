@@ -1,0 +1,117 @@
+{
+  "W001": {
+    "worker_id": "W001",
+    "safe_to_spend_daily": 343,
+    "resilience_score": 46,
+    "resilience_days": 4,
+    "buffer_target": 14730,
+    "buffer_current": 2000,
+    "recommended_save": 636,
+    "mode": "WATCH",
+    "wallet_allocation": {
+      "daily": 10304,
+      "bills": 9800,
+      "buffer": 2000,
+      "growth": 0
+    },
+    "score_breakdown": {
+      "income_stability": 18,
+      "emergency_buffer": 3,
+      "expense_coverage": 11,
+      "debt_burden": 11,
+      "savings_consistency": 3
+    }
+  },
+  "W002": {
+    "worker_id": "W002",
+    "safe_to_spend_daily": 943,
+    "resilience_score": 76,
+    "resilience_days": 30,
+    "buffer_target": 11980,
+    "buffer_current": 18000,
+    "recommended_save": 0,
+    "mode": "NORMAL",
+    "wallet_allocation": {
+      "daily": 28300,
+      "bills": 16100,
+      "buffer": 18000,
+      "growth": 1420
+    },
+    "score_breakdown": {
+      "income_stability": 22,
+      "emergency_buffer": 25,
+      "expense_coverage": 12,
+      "debt_burden": 6,
+      "savings_consistency": 11
+    }
+  },
+  "W003": {
+    "worker_id": "W003",
+    "safe_to_spend_daily": 1400,
+    "resilience_score": 78,
+    "resilience_days": 42,
+    "buffer_target": 13980,
+    "buffer_current": 30000,
+    "recommended_save": 0,
+    "mode": "WATCH",
+    "wallet_allocation": {
+      "daily": 42000,
+      "bills": 10800,
+      "buffer": 30000,
+      "growth": 0
+    },
+    "score_breakdown": {
+      "income_stability": 11,
+      "emergency_buffer": 25,
+      "expense_coverage": 12,
+      "debt_burden": 15,
+      "savings_consistency": 15
+    }
+  },
+  "W004": {
+    "worker_id": "W004",
+    "safe_to_spend_daily": 58,
+    "resilience_score": 39,
+    "resilience_days": 1,
+    "buffer_target": 11100,
+    "buffer_current": 500,
+    "recommended_save": 0,
+    "mode": "SHOCK",
+    "wallet_allocation": {
+      "daily": 1752,
+      "bills": 8100,
+      "buffer": 500,
+      "growth": 0
+    },
+    "score_breakdown": {
+      "income_stability": 20,
+      "emergency_buffer": 1,
+      "expense_coverage": 7,
+      "debt_burden": 10,
+      "savings_consistency": 1
+    }
+  },
+  "W005": {
+    "worker_id": "W005",
+    "safe_to_spend_daily": 300,
+    "resilience_score": 47,
+    "resilience_days": 4,
+    "buffer_target": 8480,
+    "buffer_current": 1800,
+    "recommended_save": 334,
+    "mode": "RECOVERY",
+    "wallet_allocation": {
+      "daily": 9016,
+      "bills": 8400,
+      "buffer": 1800,
+      "growth": 490
+    },
+    "score_breakdown": {
+      "income_stability": 19,
+      "emergency_buffer": 3,
+      "expense_coverage": 10,
+      "debt_burden": 12,
+      "savings_consistency": 3
+    }
+  }
+}

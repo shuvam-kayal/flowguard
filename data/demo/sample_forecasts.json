@@ -1,0 +1,962 @@
+{
+  "W001": {
+    "worker_id": "W001",
+    "next_7_days": 5040,
+    "next_30_days": 21600,
+    "lower_bound": 17520,
+    "upper_bound": 25680,
+    "trend": "DECLINING",
+    "shock_probability": 0.63,
+    "weather": "WATCH",
+    "daily_forecast": [
+      {
+        "date": "2026-09-04",
+        "expected": 827,
+        "lower": 538,
+        "upper": 1116
+      },
+      {
+        "date": "2026-09-05",
+        "expected": 900,
+        "lower": 585,
+        "upper": 1215
+      },
+      {
+        "date": "2026-09-06",
+        "expected": 792,
+        "lower": 515,
+        "upper": 1069
+      },
+      {
+        "date": "2026-09-07",
+        "expected": 612,
+        "lower": 398,
+        "upper": 826
+      },
+      {
+        "date": "2026-09-08",
+        "expected": 648,
+        "lower": 422,
+        "upper": 874
+      },
+      {
+        "date": "2026-09-09",
+        "expected": 720,
+        "lower": 469,
+        "upper": 971
+      },
+      {
+        "date": "2026-09-10",
+        "expected": 756,
+        "lower": 492,
+        "upper": 1020
+      },
+      {
+        "date": "2026-09-11",
+        "expected": 662,
+        "lower": 431,
+        "upper": 893
+      },
+      {
+        "date": "2026-09-12",
+        "expected": 720,
+        "lower": 469,
+        "upper": 971
+      },
+      {
+        "date": "2026-09-13",
+        "expected": 633,
+        "lower": 412,
+        "upper": 854
+      },
+      {
+        "date": "2026-09-14",
+        "expected": 489,
+        "lower": 318,
+        "upper": 660
+      },
+      {
+        "date": "2026-09-15",
+        "expected": 518,
+        "lower": 337,
+        "upper": 699
+      },
+      {
+        "date": "2026-09-16",
+        "expected": 576,
+        "lower": 375,
+        "upper": 777
+      },
+      {
+        "date": "2026-09-17",
+        "expected": 604,
+        "lower": 393,
+        "upper": 815
+      },
+      {
+        "date": "2026-09-18",
+        "expected": 662,
+        "lower": 431,
+        "upper": 893
+      },
+      {
+        "date": "2026-09-19",
+        "expected": 720,
+        "lower": 469,
+        "upper": 971
+      },
+      {
+        "date": "2026-09-20",
+        "expected": 633,
+        "lower": 412,
+        "upper": 854
+      },
+      {
+        "date": "2026-09-21",
+        "expected": 612,
+        "lower": 398,
+        "upper": 826
+      },
+      {
+        "date": "2026-09-22",
+        "expected": 648,
+        "lower": 422,
+        "upper": 874
+      },
+      {
+        "date": "2026-09-23",
+        "expected": 720,
+        "lower": 469,
+        "upper": 971
+      },
+      {
+        "date": "2026-09-24",
+        "expected": 756,
+        "lower": 492,
+        "upper": 1020
+      },
+      {
+        "date": "2026-09-25",
+        "expected": 827,
+        "lower": 538,
+        "upper": 1116
+      },
+      {
+        "date": "2026-09-26",
+        "expected": 900,
+        "lower": 585,
+        "upper": 1215
+      },
+      {
+        "date": "2026-09-27",
+        "expected": 792,
+        "lower": 515,
+        "upper": 1069
+      },
+      {
+        "date": "2026-09-28",
+        "expected": 612,
+        "lower": 398,
+        "upper": 826
+      },
+      {
+        "date": "2026-09-29",
+        "expected": 648,
+        "lower": 422,
+        "upper": 874
+      },
+      {
+        "date": "2026-09-30",
+        "expected": 720,
+        "lower": 469,
+        "upper": 971
+      },
+      {
+        "date": "2026-10-01",
+        "expected": 756,
+        "lower": 492,
+        "upper": 1020
+      },
+      {
+        "date": "2026-10-02",
+        "expected": 827,
+        "lower": 538,
+        "upper": 1116
+      },
+      {
+        "date": "2026-10-03",
+        "expected": 900,
+        "lower": 585,
+        "upper": 1215
+      }
+    ]
+  },
+  "W002": {
+    "worker_id": "W002",
+    "next_7_days": 7466,
+    "next_30_days": 32000,
+    "lower_bound": 30080,
+    "upper_bound": 33920,
+    "trend": "STABLE",
+    "shock_probability": 0.2,
+    "weather": "STABLE",
+    "daily_forecast": [
+      {
+        "date": "2026-09-04",
+        "expected": 1226,
+        "lower": 797,
+        "upper": 1655
+      },
+      {
+        "date": "2026-09-05",
+        "expected": 1333,
+        "lower": 867,
+        "upper": 1799
+      },
+      {
+        "date": "2026-09-06",
+        "expected": 1173,
+        "lower": 763,
+        "upper": 1583
+      },
+      {
+        "date": "2026-09-07",
+        "expected": 906,
+        "lower": 589,
+        "upper": 1223
+      },
+      {
+        "date": "2026-09-08",
+        "expected": 960,
+        "lower": 624,
+        "upper": 1296
+      },
+      {
+        "date": "2026-09-09",
+        "expected": 1066,
+        "lower": 693,
+        "upper": 1439
+      },
+      {
+        "date": "2026-09-10",
+        "expected": 1120,
+        "lower": 728,
+        "upper": 1512
+      },
+      {
+        "date": "2026-09-11",
+        "expected": 1226,
+        "lower": 797,
+        "upper": 1655
+      },
+      {
+        "date": "2026-09-12",
+        "expected": 1333,
+        "lower": 867,
+        "upper": 1799
+      },
+      {
+        "date": "2026-09-13",
+        "expected": 1173,
+        "lower": 763,
+        "upper": 1583
+      },
+      {
+        "date": "2026-09-14",
+        "expected": 906,
+        "lower": 589,
+        "upper": 1223
+      },
+      {
+        "date": "2026-09-15",
+        "expected": 960,
+        "lower": 624,
+        "upper": 1296
+      },
+      {
+        "date": "2026-09-16",
+        "expected": 1066,
+        "lower": 693,
+        "upper": 1439
+      },
+      {
+        "date": "2026-09-17",
+        "expected": 1120,
+        "lower": 728,
+        "upper": 1512
+      },
+      {
+        "date": "2026-09-18",
+        "expected": 1226,
+        "lower": 797,
+        "upper": 1655
+      },
+      {
+        "date": "2026-09-19",
+        "expected": 1333,
+        "lower": 867,
+        "upper": 1799
+      },
+      {
+        "date": "2026-09-20",
+        "expected": 1173,
+        "lower": 763,
+        "upper": 1583
+      },
+      {
+        "date": "2026-09-21",
+        "expected": 906,
+        "lower": 589,
+        "upper": 1223
+      },
+      {
+        "date": "2026-09-22",
+        "expected": 960,
+        "lower": 624,
+        "upper": 1296
+      },
+      {
+        "date": "2026-09-23",
+        "expected": 1066,
+        "lower": 693,
+        "upper": 1439
+      },
+      {
+        "date": "2026-09-24",
+        "expected": 1120,
+        "lower": 728,
+        "upper": 1512
+      },
+      {
+        "date": "2026-09-25",
+        "expected": 1226,
+        "lower": 797,
+        "upper": 1655
+      },
+      {
+        "date": "2026-09-26",
+        "expected": 1333,
+        "lower": 867,
+        "upper": 1799
+      },
+      {
+        "date": "2026-09-27",
+        "expected": 1173,
+        "lower": 763,
+        "upper": 1583
+      },
+      {
+        "date": "2026-09-28",
+        "expected": 906,
+        "lower": 589,
+        "upper": 1223
+      },
+      {
+        "date": "2026-09-29",
+        "expected": 960,
+        "lower": 624,
+        "upper": 1296
+      },
+      {
+        "date": "2026-09-30",
+        "expected": 1066,
+        "lower": 693,
+        "upper": 1439
+      },
+      {
+        "date": "2026-10-01",
+        "expected": 1120,
+        "lower": 728,
+        "upper": 1512
+      },
+      {
+        "date": "2026-10-02",
+        "expected": 1226,
+        "lower": 797,
+        "upper": 1655
+      },
+      {
+        "date": "2026-10-03",
+        "expected": 1333,
+        "lower": 867,
+        "upper": 1799
+      }
+    ]
+  },
+  "W003": {
+    "worker_id": "W003",
+    "next_7_days": 9398,
+    "next_30_days": 40280,
+    "lower_bound": 27680,
+    "upper_bound": 52880,
+    "trend": "RISING",
+    "shock_probability": 0.55,
+    "weather": "WATCH",
+    "daily_forecast": [
+      {
+        "date": "2026-09-04",
+        "expected": 1544,
+        "lower": 1004,
+        "upper": 2084
+      },
+      {
+        "date": "2026-09-05",
+        "expected": 1678,
+        "lower": 1091,
+        "upper": 2265
+      },
+      {
+        "date": "2026-09-06",
+        "expected": 1476,
+        "lower": 960,
+        "upper": 1992
+      },
+      {
+        "date": "2026-09-07",
+        "expected": 1141,
+        "lower": 742,
+        "upper": 1540
+      },
+      {
+        "date": "2026-09-08",
+        "expected": 1208,
+        "lower": 786,
+        "upper": 1630
+      },
+      {
+        "date": "2026-09-09",
+        "expected": 1342,
+        "lower": 873,
+        "upper": 1811
+      },
+      {
+        "date": "2026-09-10",
+        "expected": 1409,
+        "lower": 916,
+        "upper": 1902
+      },
+      {
+        "date": "2026-09-11",
+        "expected": 1235,
+        "lower": 803,
+        "upper": 1667
+      },
+      {
+        "date": "2026-09-12",
+        "expected": 1342,
+        "lower": 873,
+        "upper": 1811
+      },
+      {
+        "date": "2026-09-13",
+        "expected": 1181,
+        "lower": 768,
+        "upper": 1594
+      },
+      {
+        "date": "2026-09-14",
+        "expected": 913,
+        "lower": 594,
+        "upper": 1232
+      },
+      {
+        "date": "2026-09-15",
+        "expected": 966,
+        "lower": 628,
+        "upper": 1304
+      },
+      {
+        "date": "2026-09-16",
+        "expected": 1074,
+        "lower": 699,
+        "upper": 1449
+      },
+      {
+        "date": "2026-09-17",
+        "expected": 1127,
+        "lower": 733,
+        "upper": 1521
+      },
+      {
+        "date": "2026-09-18",
+        "expected": 1235,
+        "lower": 803,
+        "upper": 1667
+      },
+      {
+        "date": "2026-09-19",
+        "expected": 1342,
+        "lower": 873,
+        "upper": 1811
+      },
+      {
+        "date": "2026-09-20",
+        "expected": 1181,
+        "lower": 768,
+        "upper": 1594
+      },
+      {
+        "date": "2026-09-21",
+        "expected": 1141,
+        "lower": 742,
+        "upper": 1540
+      },
+      {
+        "date": "2026-09-22",
+        "expected": 1208,
+        "lower": 786,
+        "upper": 1630
+      },
+      {
+        "date": "2026-09-23",
+        "expected": 1342,
+        "lower": 873,
+        "upper": 1811
+      },
+      {
+        "date": "2026-09-24",
+        "expected": 1409,
+        "lower": 916,
+        "upper": 1902
+      },
+      {
+        "date": "2026-09-25",
+        "expected": 1544,
+        "lower": 1004,
+        "upper": 2084
+      },
+      {
+        "date": "2026-09-26",
+        "expected": 1678,
+        "lower": 1091,
+        "upper": 2265
+      },
+      {
+        "date": "2026-09-27",
+        "expected": 1476,
+        "lower": 960,
+        "upper": 1992
+      },
+      {
+        "date": "2026-09-28",
+        "expected": 1141,
+        "lower": 742,
+        "upper": 1540
+      },
+      {
+        "date": "2026-09-29",
+        "expected": 1208,
+        "lower": 786,
+        "upper": 1630
+      },
+      {
+        "date": "2026-09-30",
+        "expected": 1342,
+        "lower": 873,
+        "upper": 1811
+      },
+      {
+        "date": "2026-10-01",
+        "expected": 1409,
+        "lower": 916,
+        "upper": 1902
+      },
+      {
+        "date": "2026-10-02",
+        "expected": 1544,
+        "lower": 1004,
+        "upper": 2084
+      },
+      {
+        "date": "2026-10-03",
+        "expected": 1678,
+        "lower": 1091,
+        "upper": 2265
+      }
+    ]
+  },
+  "W004": {
+    "worker_id": "W004",
+    "next_7_days": 3266,
+    "next_30_days": 14000,
+    "lower_bound": 12320,
+    "upper_bound": 15680,
+    "trend": "STABLE",
+    "shock_probability": 0.71,
+    "weather": "SHOCK",
+    "daily_forecast": [
+      {
+        "date": "2026-09-04",
+        "expected": 536,
+        "lower": 349,
+        "upper": 723
+      },
+      {
+        "date": "2026-09-05",
+        "expected": 583,
+        "lower": 379,
+        "upper": 787
+      },
+      {
+        "date": "2026-09-06",
+        "expected": 513,
+        "lower": 334,
+        "upper": 692
+      },
+      {
+        "date": "2026-09-07",
+        "expected": 396,
+        "lower": 258,
+        "upper": 534
+      },
+      {
+        "date": "2026-09-08",
+        "expected": 420,
+        "lower": 273,
+        "upper": 567
+      },
+      {
+        "date": "2026-09-09",
+        "expected": 466,
+        "lower": 303,
+        "upper": 629
+      },
+      {
+        "date": "2026-09-10",
+        "expected": 490,
+        "lower": 319,
+        "upper": 661
+      },
+      {
+        "date": "2026-09-11",
+        "expected": 375,
+        "lower": 244,
+        "upper": 506
+      },
+      {
+        "date": "2026-09-12",
+        "expected": 408,
+        "lower": 266,
+        "upper": 550
+      },
+      {
+        "date": "2026-09-13",
+        "expected": 359,
+        "lower": 234,
+        "upper": 484
+      },
+      {
+        "date": "2026-09-14",
+        "expected": 277,
+        "lower": 181,
+        "upper": 373
+      },
+      {
+        "date": "2026-09-15",
+        "expected": 294,
+        "lower": 192,
+        "upper": 396
+      },
+      {
+        "date": "2026-09-16",
+        "expected": 326,
+        "lower": 212,
+        "upper": 440
+      },
+      {
+        "date": "2026-09-17",
+        "expected": 343,
+        "lower": 223,
+        "upper": 463
+      },
+      {
+        "date": "2026-09-18",
+        "expected": 375,
+        "lower": 244,
+        "upper": 506
+      },
+      {
+        "date": "2026-09-19",
+        "expected": 408,
+        "lower": 266,
+        "upper": 550
+      },
+      {
+        "date": "2026-09-20",
+        "expected": 359,
+        "lower": 234,
+        "upper": 484
+      },
+      {
+        "date": "2026-09-21",
+        "expected": 396,
+        "lower": 258,
+        "upper": 534
+      },
+      {
+        "date": "2026-09-22",
+        "expected": 420,
+        "lower": 273,
+        "upper": 567
+      },
+      {
+        "date": "2026-09-23",
+        "expected": 466,
+        "lower": 303,
+        "upper": 629
+      },
+      {
+        "date": "2026-09-24",
+        "expected": 490,
+        "lower": 319,
+        "upper": 661
+      },
+      {
+        "date": "2026-09-25",
+        "expected": 536,
+        "lower": 349,
+        "upper": 723
+      },
+      {
+        "date": "2026-09-26",
+        "expected": 583,
+        "lower": 379,
+        "upper": 787
+      },
+      {
+        "date": "2026-09-27",
+        "expected": 513,
+        "lower": 334,
+        "upper": 692
+      },
+      {
+        "date": "2026-09-28",
+        "expected": 396,
+        "lower": 258,
+        "upper": 534
+      },
+      {
+        "date": "2026-09-29",
+        "expected": 420,
+        "lower": 273,
+        "upper": 567
+      },
+      {
+        "date": "2026-09-30",
+        "expected": 466,
+        "lower": 303,
+        "upper": 629
+      },
+      {
+        "date": "2026-10-01",
+        "expected": 490,
+        "lower": 319,
+        "upper": 661
+      },
+      {
+        "date": "2026-10-02",
+        "expected": 536,
+        "lower": 349,
+        "upper": 723
+      },
+      {
+        "date": "2026-10-03",
+        "expected": 583,
+        "lower": 379,
+        "upper": 787
+      }
+    ]
+  },
+  "W005": {
+    "worker_id": "W005",
+    "next_7_days": 4699,
+    "next_30_days": 20140,
+    "lower_bound": 17440,
+    "upper_bound": 22840,
+    "trend": "RISING",
+    "shock_probability": 0.3,
+    "weather": "STABLE",
+    "daily_forecast": [
+      {
+        "date": "2026-09-04",
+        "expected": 772,
+        "lower": 502,
+        "upper": 1042
+      },
+      {
+        "date": "2026-09-05",
+        "expected": 839,
+        "lower": 546,
+        "upper": 1132
+      },
+      {
+        "date": "2026-09-06",
+        "expected": 738,
+        "lower": 480,
+        "upper": 996
+      },
+      {
+        "date": "2026-09-07",
+        "expected": 570,
+        "lower": 371,
+        "upper": 769
+      },
+      {
+        "date": "2026-09-08",
+        "expected": 604,
+        "lower": 393,
+        "upper": 815
+      },
+      {
+        "date": "2026-09-09",
+        "expected": 671,
+        "lower": 437,
+        "upper": 905
+      },
+      {
+        "date": "2026-09-10",
+        "expected": 704,
+        "lower": 458,
+        "upper": 950
+      },
+      {
+        "date": "2026-09-11",
+        "expected": 772,
+        "lower": 502,
+        "upper": 1042
+      },
+      {
+        "date": "2026-09-12",
+        "expected": 839,
+        "lower": 546,
+        "upper": 1132
+      },
+      {
+        "date": "2026-09-13",
+        "expected": 738,
+        "lower": 480,
+        "upper": 996
+      },
+      {
+        "date": "2026-09-14",
+        "expected": 570,
+        "lower": 371,
+        "upper": 769
+      },
+      {
+        "date": "2026-09-15",
+        "expected": 604,
+        "lower": 393,
+        "upper": 815
+      },
+      {
+        "date": "2026-09-16",
+        "expected": 671,
+        "lower": 437,
+        "upper": 905
+      },
+      {
+        "date": "2026-09-17",
+        "expected": 704,
+        "lower": 458,
+        "upper": 950
+      },
+      {
+        "date": "2026-09-18",
+        "expected": 772,
+        "lower": 502,
+        "upper": 1042
+      },
+      {
+        "date": "2026-09-19",
+        "expected": 839,
+        "lower": 546,
+        "upper": 1132
+      },
+      {
+        "date": "2026-09-20",
+        "expected": 738,
+        "lower": 480,
+        "upper": 996
+      },
+      {
+        "date": "2026-09-21",
+        "expected": 570,
+        "lower": 371,
+        "upper": 769
+      },
+      {
+        "date": "2026-09-22",
+        "expected": 604,
+        "lower": 393,
+        "upper": 815
+      },
+      {
+        "date": "2026-09-23",
+        "expected": 671,
+        "lower": 437,
+        "upper": 905
+      },
+      {
+        "date": "2026-09-24",
+        "expected": 704,
+        "lower": 458,
+        "upper": 950
+      },
+      {
+        "date": "2026-09-25",
+        "expected": 772,
+        "lower": 502,
+        "upper": 1042
+      },
+      {
+        "date": "2026-09-26",
+        "expected": 839,
+        "lower": 546,
+        "upper": 1132
+      },
+      {
+        "date": "2026-09-27",
+        "expected": 738,
+        "lower": 480,
+        "upper": 996
+      },
+      {
+        "date": "2026-09-28",
+        "expected": 570,
+        "lower": 371,
+        "upper": 769
+      },
+      {
+        "date": "2026-09-29",
+        "expected": 604,
+        "lower": 393,
+        "upper": 815
+      },
+      {
+        "date": "2026-09-30",
+        "expected": 671,
+        "lower": 437,
+        "upper": 905
+      },
+      {
+        "date": "2026-10-01",
+        "expected": 704,
+        "lower": 458,
+        "upper": 950
+      },
+      {
+        "date": "2026-10-02",
+        "expected": 772,
+        "lower": 502,
+        "upper": 1042
+      },
+      {
+        "date": "2026-10-03",
+        "expected": 839,
+        "lower": 546,
+        "upper": 1132
+      }
+    ]
+  }
+}

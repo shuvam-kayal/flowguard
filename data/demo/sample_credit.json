@@ -1,0 +1,187 @@
+{
+  "W001": {
+    "worker_id": "W001",
+    "requested_amount": 5000,
+    "buffer_available": 2000,
+    "expected_shortfall": 3000,
+    "recommended_credit": 600,
+    "safe_monthly_repayment": 150,
+    "decision": "PARTIAL_CREDIT",
+    "waterfall": [
+      {
+        "source": "savings",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "emergency_buffer",
+        "amount": 2000,
+        "used": true
+      },
+      {
+        "source": "delay_expense",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "future_income",
+        "amount": 2400,
+        "used": true
+      },
+      {
+        "source": "credit",
+        "amount": 600,
+        "used": true
+      }
+    ],
+    "message": "Use ₹2000 buffer + ₹600 responsible credit. Safe repayment ₹150/month."
+  },
+  "W002": {
+    "worker_id": "W002",
+    "requested_amount": 5000,
+    "buffer_available": 18000,
+    "expected_shortfall": 0,
+    "recommended_credit": 0,
+    "safe_monthly_repayment": 0,
+    "decision": "NO_CREDIT_NEEDED",
+    "waterfall": [
+      {
+        "source": "savings",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "emergency_buffer",
+        "amount": 18000,
+        "used": true
+      },
+      {
+        "source": "delay_expense",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "future_income",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "credit",
+        "amount": 0,
+        "used": false
+      }
+    ],
+    "message": "Your buffer covers this — no credit needed."
+  },
+  "W003": {
+    "worker_id": "W003",
+    "requested_amount": 5000,
+    "buffer_available": 30000,
+    "expected_shortfall": 0,
+    "recommended_credit": 0,
+    "safe_monthly_repayment": 0,
+    "decision": "NO_CREDIT_NEEDED",
+    "waterfall": [
+      {
+        "source": "savings",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "emergency_buffer",
+        "amount": 30000,
+        "used": true
+      },
+      {
+        "source": "delay_expense",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "future_income",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "credit",
+        "amount": 0,
+        "used": false
+      }
+    ],
+    "message": "Your buffer covers this — no credit needed."
+  },
+  "W004": {
+    "worker_id": "W004",
+    "requested_amount": 5000,
+    "buffer_available": 500,
+    "expected_shortfall": 4500,
+    "recommended_credit": 3100,
+    "safe_monthly_repayment": 775,
+    "decision": "PARTIAL_CREDIT",
+    "waterfall": [
+      {
+        "source": "savings",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "emergency_buffer",
+        "amount": 500,
+        "used": true
+      },
+      {
+        "source": "delay_expense",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "future_income",
+        "amount": 1400,
+        "used": true
+      },
+      {
+        "source": "credit",
+        "amount": 3100,
+        "used": true
+      }
+    ],
+    "message": "Use ₹500 buffer + ₹3100 responsible credit. Safe repayment ₹775/month."
+  },
+  "W005": {
+    "worker_id": "W005",
+    "requested_amount": 5000,
+    "buffer_available": 1800,
+    "expected_shortfall": 3200,
+    "recommended_credit": 1300,
+    "safe_monthly_repayment": 325,
+    "decision": "PARTIAL_CREDIT",
+    "waterfall": [
+      {
+        "source": "savings",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "emergency_buffer",
+        "amount": 1800,
+        "used": true
+      },
+      {
+        "source": "delay_expense",
+        "amount": 0,
+        "used": false
+      },
+      {
+        "source": "future_income",
+        "amount": 1900,
+        "used": true
+      },
+      {
+        "source": "credit",
+        "amount": 1300,
+        "used": true
+      }
+    ],
+    "message": "Use ₹1800 buffer + ₹1300 responsible credit. Safe repayment ₹325/month."
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "W001": {
+    "worker_id": "W001",
+    "risk_score": 0.72,
+    "risk_level": "HIGH",
+    "confidence": 0.86,
+    "top_factors": [
+      {
+        "feature": "income_volatility",
+        "impact": 0.24,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "low_savings",
+        "impact": 0.19,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "upcoming_emi",
+        "impact": 0.11,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "expense_to_income_ratio",
+        "impact": 0.14,
+        "direction": "increases_risk"
+      }
+    ]
+  },
+  "W002": {
+    "worker_id": "W002",
+    "risk_score": 0.21,
+    "risk_level": "LOW",
+    "confidence": 0.9,
+    "top_factors": [
+      {
+        "feature": "emergency_buffer",
+        "impact": 0.28,
+        "direction": "decreases_risk"
+      },
+      {
+        "feature": "income_stability",
+        "impact": 0.22,
+        "direction": "decreases_risk"
+      },
+      {
+        "feature": "high_emi",
+        "impact": 0.12,
+        "direction": "increases_risk"
+      }
+    ]
+  },
+  "W003": {
+    "worker_id": "W003",
+    "risk_score": 0.48,
+    "risk_level": "MODERATE",
+    "confidence": 0.79,
+    "top_factors": [
+      {
+        "feature": "income_volatility",
+        "impact": 0.31,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "large_buffer",
+        "impact": 0.25,
+        "direction": "decreases_risk"
+      },
+      {
+        "feature": "no_debt",
+        "impact": 0.1,
+        "direction": "decreases_risk"
+      }
+    ]
+  },
+  "W004": {
+    "worker_id": "W004",
+    "risk_score": 0.88,
+    "risk_level": "HIGH",
+    "confidence": 0.91,
+    "top_factors": [
+      {
+        "feature": "expense_to_income_ratio",
+        "impact": 0.3,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "near_zero_buffer",
+        "impact": 0.27,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "dependents",
+        "impact": 0.15,
+        "direction": "increases_risk"
+      }
+    ]
+  },
+  "W005": {
+    "worker_id": "W005",
+    "risk_score": 0.44,
+    "risk_level": "MODERATE",
+    "confidence": 0.82,
+    "top_factors": [
+      {
+        "feature": "rising_income",
+        "impact": 0.2,
+        "direction": "decreases_risk"
+      },
+      {
+        "feature": "thin_buffer",
+        "impact": 0.18,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "moderate_debt",
+        "impact": 0.12,
+        "direction": "increases_risk"
+      }
+    ]
+  }
+}
