@@ -1,20 +1,16 @@
 """
 Person 4 — FastAPI backend / orchestration.
 Wires the four modules together behind ONE dashboard endpoint.
-
-Day 1: serves straight from the demo mocks so the frontend is unblocked.
-As real modules land, swap the mock loads for imports:
-    from ml.predict import predict_risk
-    from forecast.predict import forecast_income
-    from resilience.engine import evaluate, recommend
+Uses SQLite database via SQLAlchemy.
 
 Run:  uvicorn backend.main:app --reload --port 8000
 """
-import json
 import os
 from copy import deepcopy
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from backend.services.income import get_income_history
 from backend.schemas.contracts import (
     DashboardResponse, FinancialProfile, ForecastResult, ObligationSummary,
     ResilienceResult, RiskResult,
@@ -27,9 +23,13 @@ from constants import (
     SHOCK_RISK_INCREMENT, SHOCK_MAX_PROBABILITY, SHOCK_MAX_RISK_SCORE,
     SHOCK_SIMULATION_SPEND_FACTOR,
 )
+from backend.database import get_db, engine, Base
+from backend.models import (
+    User, Obligation, RiskResultModel, ForecastResultModel, 
+    ResilienceResultModel, Recommendation as RecommendationModel
+)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEMO = os.path.join(ROOT, "data", "demo")
 
 app = FastAPI(title="FlowGuard API", version="0.1.0")
 _origins = [origin.strip() for origin in os.getenv("FLOWGUARD_ALLOWED_ORIGINS", "*").split(",") if origin.strip()]
@@ -39,42 +39,79 @@ app.add_middleware(
     allow_methods=["*"], allow_headers=["*"],
 )
 
-
-def _load(name):
-    with open(os.path.join(DEMO, name), encoding="utf-8") as f:
-        return json.load(f)
-
-
 # ---- toggle: use mocks or real modules -------------------------------------
+# Set to False to read pre-computed risk/resilience from the DB. 
+# Set to True to evaluate on-the-fly using the actual ML/engine modules.
 USE_REAL_MODULES = True
 
-
-def get_dashboard(worker_id: str) -> DashboardResponse:
-    dashboards = _load("sample_dashboards.json")
-    if worker_id not in dashboards:
+def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
+    user = db.query(User).filter(User.worker_id == worker_id).first()
+    if not user:
         raise HTTPException(404, f"Unknown worker {worker_id}")
+
+    obs = db.query(Obligation).filter(Obligation.worker_id == worker_id).all()
+    total_upcoming = sum(o.amount for o in obs)
+    obl_summary = ObligationSummary(
+        worker_id=worker_id,
+        upcoming_obligations=[
+            {"name": o.name, "amount": o.amount, "due_date": o.due_date, "category": o.category}
+            for o in obs
+        ],
+        total_upcoming=total_upcoming,
+        essential_daily_spend=user.fixed_expenses // 30
+    )
+
     if not USE_REAL_MODULES:
-        return DashboardResponse.model_validate(dashboards[worker_id])
+        risk_m = db.query(RiskResultModel).filter_by(worker_id=worker_id).first()
+        fc_m = db.query(ForecastResultModel).filter_by(worker_id=worker_id).first()
+        rs_m = db.query(ResilienceResultModel).filter_by(worker_id=worker_id).first()
+        recs_m = db.query(RecommendationModel).filter_by(worker_id=worker_id).all()
 
-    # ---- real orchestration path (enable at checkpoint 2) ----
-    import sys
-    sys.path.insert(0, ROOT)
-    from ml.predict import predict_risk
-    from forecast.predict import forecast_income
-    from resilience.engine import evaluate, recommend
+        if not (risk_m and fc_m and rs_m):
+            raise HTTPException(500, "Dashboard data not seeded for this worker.")
 
-    personas = {p["worker_id"]: p for p in _load("personas.json")["personas"]}
-    obligations = _load("sample_obligations.json")
-    profile = FinancialProfile.model_validate(personas[worker_id])
-    risk = predict_risk(profile)
-    forecast = forecast_income(profile)
-    obl = ObligationSummary.model_validate(obligations[worker_id])
-    resilience = evaluate(profile, risk, forecast, obl)
-    recs = recommend(profile, resilience, forecast)
+        risk = RiskResult(
+            worker_id=risk_m.worker_id, risk_score=risk_m.risk_score, 
+            risk_level=risk_m.risk_level, confidence=risk_m.confidence, top_factors=risk_m.top_factors
+        )
+        forecast = ForecastResult(
+            worker_id=fc_m.worker_id, next_7_days=fc_m.next_7_days, next_30_days=fc_m.next_30_days,
+            lower_bound=fc_m.lower_bound, upper_bound=fc_m.upper_bound, trend=fc_m.trend,
+            shock_probability=fc_m.shock_probability, weather=fc_m.weather, daily_forecast=fc_m.daily_forecast
+        )
+        resilience = ResilienceResult(
+            worker_id=rs_m.worker_id, safe_to_spend_daily=rs_m.safe_to_spend_daily,
+            resilience_score=rs_m.resilience_score, resilience_days=rs_m.resilience_days,
+            buffer_target=rs_m.buffer_target, buffer_current=rs_m.buffer_current,
+            recommended_save=rs_m.recommended_save, mode=rs_m.mode,
+            wallet_allocation=rs_m.wallet_allocation, score_breakdown=rs_m.score_breakdown
+        )
+        recs = [
+            {"type": r.type, "priority": r.priority, "amount": r.amount, "message": r.message, "reason": r.reason}
+            for r in recs_m
+        ]
+    else:
+        # ---- real orchestration path ----
+        import sys
+        if ROOT not in sys.path:
+            sys.path.insert(0, ROOT)
+        from ml.predict import predict_risk
+        from forecast.predict import forecast_income
+        from resilience.engine import evaluate, recommend
+
+        profile_data = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+        profile = FinancialProfile(**profile_data)
+
+        history = get_income_history(worker_id, db)
+        risk = predict_risk(profile)
+        forecast = forecast_income(profile, history)
+        resilience = evaluate(profile, risk, forecast, obl_summary)
+        recs = recommend(profile, resilience, forecast)
+
     return DashboardResponse(
-        worker={k: getattr(profile, k) for k in ("worker_id", "name", "occupation", "current_balance")},
+        worker={"worker_id": user.worker_id, "name": user.name, "occupation": user.occupation, "current_balance": user.current_balance},
         risk=risk, forecast=forecast, resilience=resilience,
-        obligations=obl, recommendations=recs,
+        obligations=obl_summary, recommendations=recs,
     )
 
 
@@ -84,14 +121,14 @@ def health():
 
 
 @app.get("/workers")
-def list_workers():
-    dashboards = _load("sample_dashboards.json")
-    return [d["worker"] for d in dashboards.values()]
+def list_workers(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return [{"worker_id": u.worker_id, "name": u.name, "occupation": u.occupation, "current_balance": u.current_balance} for u in users]
 
 
 @app.get("/worker/{worker_id}/dashboard")
-def worker_dashboard(worker_id: str) -> DashboardResponse:
-    return get_dashboard(worker_id)
+def worker_dashboard(worker_id: str, db: Session = Depends(get_db)) -> DashboardResponse:
+    return get_dashboard(worker_id, db)
 
 
 @app.post("/ml/risk")
@@ -118,15 +155,20 @@ def resilience_endpoint(payload: dict):
 
 
 @app.post("/credit/evaluate")
-def credit_evaluate(payload: dict):
+def credit_evaluate(payload: dict, db: Session = Depends(get_db)):
     wid = payload.get("worker_id", "W001")
-    dashboard = get_dashboard(wid)
+    dashboard = get_dashboard(wid, db)
     from resilience.credit_guard import evaluate_credit
-    personas = {p["worker_id"]: p for p in _load("personas.json")["personas"]}
-    if wid not in personas:
+    
+    user = db.query(User).filter(User.worker_id == wid).first()
+    if not user:
         raise HTTPException(404, f"Unknown worker {wid}")
+    
+    profile_data = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+    profile = FinancialProfile(**profile_data)
+    
     requested = max(0, int(payload.get("requested_amount", 0)))
-    return evaluate_credit(FinancialProfile.model_validate(personas[wid]),
+    return evaluate_credit(profile,
                            ResilienceResult.model_validate(dashboard.resilience),
                            ForecastResult.model_validate(dashboard.forecast), requested)
 
@@ -179,13 +221,13 @@ def _apply_recovery(dash: DashboardResponse) -> DashboardResponse:
 
 
 @app.post("/simulate/shock")
-def simulate_shock(payload: dict):
+def simulate_shock(payload: dict, db: Session = Depends(get_db)):
     wid = payload.get("worker_id", "W001")
     factor = payload.get("factor", SHOCK_DEFAULT_FACTOR)
-    return _apply_shock(get_dashboard(wid), factor)
+    return _apply_shock(get_dashboard(wid, db), factor)
 
 
 @app.post("/simulate/recovery")
-def simulate_recovery(payload: dict):
+def simulate_recovery(payload: dict, db: Session = Depends(get_db)):
     wid = payload.get("worker_id", "W001")
-    return _apply_recovery(get_dashboard(wid))
+    return _apply_recovery(get_dashboard(wid, db))
