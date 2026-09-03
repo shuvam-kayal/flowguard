@@ -1,0 +1,1 @@
+export function ShockModeBanner() { return <div className="rounded-xl border border-[#efc5c5] bg-[#fff6f6] p-4 text-sm text-[#8b3131]"><strong>Income shock mode</strong><p>Your plan has adjusted to protect essentials.</p></div>; }

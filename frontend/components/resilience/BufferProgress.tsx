@@ -1,0 +1,1 @@
+export function BufferProgress({ current, target }: { current: number; target: number }) { return <div className="h-2 overflow-hidden rounded-full bg-[#edf2ee]"><div className="h-full bg-[#23aa6b]" style={{ width: `${Math.min(100, current / target * 100)}%` }} /></div>; }
