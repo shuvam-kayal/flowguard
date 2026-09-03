@@ -1,0 +1,18 @@
+{
+  "features": [
+    "income_volatility",
+    "income_trend_score",
+    "expense_burden",
+    "buffer_coverage",
+    "debt_service_burden",
+    "income_gap_ratio",
+    "payment_frequency_variance",
+    "essential_spend_ratio"
+  ],
+  "classes": [
+    "HIGH",
+    "LOW",
+    "MODERATE"
+  ],
+  "rows": 2500
+}

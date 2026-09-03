@@ -9,12 +9,14 @@ RISK_CONFIDENCE_MAX = 0.95
 RISK_CONFIDENCE_HISTORY_SCALE = 100
 RISK_TREND_SCORES = {"DECLINING": -0.60, "STABLE": 0.0, "RISING": 0.35}
 RISK_WEIGHTS = {
-    "income_volatility": 0.34,
-    "income_trend": 0.20,
-    "expense_burden": 0.40,
-    "low_buffer_coverage": -0.22,
-    "debt_service_burden": 0.16,
-    "income_gap": 0.22,
+    "income_volatility": 0.22,
+    "income_trend": 0.15,
+    "expense_burden": 0.25,
+    "low_buffer_coverage": -0.15,
+    "debt_service_burden": 0.10,
+    "income_gap": 0.15,
+    "payment_frequency_variance": 0.15,
+    "essential_spend_ratio": 0.15,
 }
 
 FORECAST_WEEKDAY_MULTIPLIERS = (1.08, 1.12, 1.05, 0.92, 0.96, 1.03, 1.10)
