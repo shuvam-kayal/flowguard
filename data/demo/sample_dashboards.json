@@ -279,11 +279,1186 @@
         "type": "SAVE",
         "priority": "HIGH",
         "amount": 300,
-        "message": "Your safety buffer is critically low � prioritise saving",
+        "message": "Your safety buffer is critically low — prioritise saving",
         "reason": "Only 4 days of cover remaining"
       },
       {
         "type": "SAVE",
         "priority": "HIGH",
         "amount": 636,
-        "message": 
+        "message": "Move ₹636 to your emergency buffer",
+        "reason": "Income dip predicted in the next 8 days"
+      },
+      {
+        "type": "REDUCE_SPEND",
+        "priority": "MEDIUM",
+        "amount": null,
+        "message": "Trim discretionary spending this week",
+        "reason": "Forecast trend is declining"
+      },
+      {
+        "type": "AVOID_CREDIT",
+        "priority": "HIGH",
+        "amount": null,
+        "message": "You don't need a loan right now",
+        "reason": "Your buffer + expected income can cover the shortfall"
+      }
+    ]
+  },
+  "W002": {
+    "worker": {
+      "worker_id": "W002",
+      "name": "Aisha Sheikh",
+      "occupation": "Ride-Hailing Driver",
+      "current_balance": 28400
+    },
+    "risk": {
+      "worker_id": "W002",
+      "risk_score": 0.21,
+      "risk_level": "LOW",
+      "confidence": 0.9,
+      "top_factors": [
+        {
+          "feature": "emergency_buffer",
+          "impact": 0.28,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "income_stability",
+          "impact": 0.22,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "high_emi",
+          "impact": 0.12,
+          "direction": "increases_risk"
+        }
+      ]
+    },
+    "forecast": {
+      "worker_id": "W002",
+      "next_7_days": 7466,
+      "next_30_days": 32000,
+      "lower_bound": 30080,
+      "upper_bound": 33920,
+      "trend": "STABLE",
+      "shock_probability": 0.2,
+      "weather": "STABLE",
+      "daily_forecast": [
+        {
+          "date": "2026-09-04",
+          "expected": 1226,
+          "lower": 797,
+          "upper": 1655
+        },
+        {
+          "date": "2026-09-05",
+          "expected": 1333,
+          "lower": 867,
+          "upper": 1799
+        },
+        {
+          "date": "2026-09-06",
+          "expected": 1173,
+          "lower": 763,
+          "upper": 1583
+        },
+        {
+          "date": "2026-09-07",
+          "expected": 906,
+          "lower": 589,
+          "upper": 1223
+        },
+        {
+          "date": "2026-09-08",
+          "expected": 960,
+          "lower": 624,
+          "upper": 1296
+        },
+        {
+          "date": "2026-09-09",
+          "expected": 1066,
+          "lower": 693,
+          "upper": 1439
+        },
+        {
+          "date": "2026-09-10",
+          "expected": 1120,
+          "lower": 728,
+          "upper": 1512
+        },
+        {
+          "date": "2026-09-11",
+          "expected": 1226,
+          "lower": 797,
+          "upper": 1655
+        },
+        {
+          "date": "2026-09-12",
+          "expected": 1333,
+          "lower": 867,
+          "upper": 1799
+        },
+        {
+          "date": "2026-09-13",
+          "expected": 1173,
+          "lower": 763,
+          "upper": 1583
+        },
+        {
+          "date": "2026-09-14",
+          "expected": 906,
+          "lower": 589,
+          "upper": 1223
+        },
+        {
+          "date": "2026-09-15",
+          "expected": 960,
+          "lower": 624,
+          "upper": 1296
+        },
+        {
+          "date": "2026-09-16",
+          "expected": 1066,
+          "lower": 693,
+          "upper": 1439
+        },
+        {
+          "date": "2026-09-17",
+          "expected": 1120,
+          "lower": 728,
+          "upper": 1512
+        },
+        {
+          "date": "2026-09-18",
+          "expected": 1226,
+          "lower": 797,
+          "upper": 1655
+        },
+        {
+          "date": "2026-09-19",
+          "expected": 1333,
+          "lower": 867,
+          "upper": 1799
+        },
+        {
+          "date": "2026-09-20",
+          "expected": 1173,
+          "lower": 763,
+          "upper": 1583
+        },
+        {
+          "date": "2026-09-21",
+          "expected": 906,
+          "lower": 589,
+          "upper": 1223
+        },
+        {
+          "date": "2026-09-22",
+          "expected": 960,
+          "lower": 624,
+          "upper": 1296
+        },
+        {
+          "date": "2026-09-23",
+          "expected": 1066,
+          "lower": 693,
+          "upper": 1439
+        },
+        {
+          "date": "2026-09-24",
+          "expected": 1120,
+          "lower": 728,
+          "upper": 1512
+        },
+        {
+          "date": "2026-09-25",
+          "expected": 1226,
+          "lower": 797,
+          "upper": 1655
+        },
+        {
+          "date": "2026-09-26",
+          "expected": 1333,
+          "lower": 867,
+          "upper": 1799
+        },
+        {
+          "date": "2026-09-27",
+          "expected": 1173,
+          "lower": 763,
+          "upper": 1583
+        },
+        {
+          "date": "2026-09-28",
+          "expected": 906,
+          "lower": 589,
+          "upper": 1223
+        },
+        {
+          "date": "2026-09-29",
+          "expected": 960,
+          "lower": 624,
+          "upper": 1296
+        },
+        {
+          "date": "2026-09-30",
+          "expected": 1066,
+          "lower": 693,
+          "upper": 1439
+        },
+        {
+          "date": "2026-10-01",
+          "expected": 1120,
+          "lower": 728,
+          "upper": 1512
+        },
+        {
+          "date": "2026-10-02",
+          "expected": 1226,
+          "lower": 797,
+          "upper": 1655
+        },
+        {
+          "date": "2026-10-03",
+          "expected": 1333,
+          "lower": 867,
+          "upper": 1799
+        }
+      ]
+    },
+    "resilience": {
+      "worker_id": "W002",
+      "safe_to_spend_daily": 943,
+      "resilience_score": 76,
+      "resilience_days": 30,
+      "buffer_target": 11980,
+      "buffer_current": 18000,
+      "recommended_save": 0,
+      "mode": "NORMAL",
+      "wallet_allocation": {
+        "daily": 28300,
+        "bills": 16100,
+        "buffer": 18000,
+        "growth": 1420
+      },
+      "score_breakdown": {
+        "income_stability": 22,
+        "emergency_buffer": 25,
+        "expense_coverage": 12,
+        "debt_burden": 6,
+        "savings_consistency": 11
+      }
+    },
+    "obligations": {
+      "worker_id": "W002",
+      "upcoming_obligations": [
+        {
+          "name": "Rent",
+          "amount": 8400,
+          "due_date": "2026-09-15",
+          "category": "FIXED"
+        },
+        {
+          "name": "EMI",
+          "amount": 6500,
+          "due_date": "2026-09-10",
+          "category": "DEBT"
+        },
+        {
+          "name": "Electricity",
+          "amount": 1200,
+          "due_date": "2026-09-12",
+          "category": "UTILITY"
+        }
+      ],
+      "total_upcoming": 16100,
+      "essential_daily_spend": 599
+    },
+    "recommendations": [
+      {
+        "type": "SAVE",
+        "priority": "MEDIUM",
+        "amount": 0,
+        "message": "On track — save ₹0 toward your buffer",
+        "reason": "Income is stable; build toward 30 resilience days"
+      }
+    ]
+  },
+  "W003": {
+    "worker": {
+      "worker_id": "W003",
+      "name": "Arjun Nair",
+      "occupation": "Freelance Designer",
+      "current_balance": 42000
+    },
+    "risk": {
+      "worker_id": "W003",
+      "risk_score": 0.48,
+      "risk_level": "MODERATE",
+      "confidence": 0.79,
+      "top_factors": [
+        {
+          "feature": "income_volatility",
+          "impact": 0.31,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "large_buffer",
+          "impact": 0.25,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "no_debt",
+          "impact": 0.1,
+          "direction": "decreases_risk"
+        }
+      ]
+    },
+    "forecast": {
+      "worker_id": "W003",
+      "next_7_days": 9398,
+      "next_30_days": 40280,
+      "lower_bound": 27680,
+      "upper_bound": 52880,
+      "trend": "RISING",
+      "shock_probability": 0.55,
+      "weather": "WATCH",
+      "daily_forecast": [
+        {
+          "date": "2026-09-04",
+          "expected": 1544,
+          "lower": 1004,
+          "upper": 2084
+        },
+        {
+          "date": "2026-09-05",
+          "expected": 1678,
+          "lower": 1091,
+          "upper": 2265
+        },
+        {
+          "date": "2026-09-06",
+          "expected": 1476,
+          "lower": 960,
+          "upper": 1992
+        },
+        {
+          "date": "2026-09-07",
+          "expected": 1141,
+          "lower": 742,
+          "upper": 1540
+        },
+        {
+          "date": "2026-09-08",
+          "expected": 1208,
+          "lower": 786,
+          "upper": 1630
+        },
+        {
+          "date": "2026-09-09",
+          "expected": 1342,
+          "lower": 873,
+          "upper": 1811
+        },
+        {
+          "date": "2026-09-10",
+          "expected": 1409,
+          "lower": 916,
+          "upper": 1902
+        },
+        {
+          "date": "2026-09-11",
+          "expected": 1235,
+          "lower": 803,
+          "upper": 1667
+        },
+        {
+          "date": "2026-09-12",
+          "expected": 1342,
+          "lower": 873,
+          "upper": 1811
+        },
+        {
+          "date": "2026-09-13",
+          "expected": 1181,
+          "lower": 768,
+          "upper": 1594
+        },
+        {
+          "date": "2026-09-14",
+          "expected": 913,
+          "lower": 594,
+          "upper": 1232
+        },
+        {
+          "date": "2026-09-15",
+          "expected": 966,
+          "lower": 628,
+          "upper": 1304
+        },
+        {
+          "date": "2026-09-16",
+          "expected": 1074,
+          "lower": 699,
+          "upper": 1449
+        },
+        {
+          "date": "2026-09-17",
+          "expected": 1127,
+          "lower": 733,
+          "upper": 1521
+        },
+        {
+          "date": "2026-09-18",
+          "expected": 1235,
+          "lower": 803,
+          "upper": 1667
+        },
+        {
+          "date": "2026-09-19",
+          "expected": 1342,
+          "lower": 873,
+          "upper": 1811
+        },
+        {
+          "date": "2026-09-20",
+          "expected": 1181,
+          "lower": 768,
+          "upper": 1594
+        },
+        {
+          "date": "2026-09-21",
+          "expected": 1141,
+          "lower": 742,
+          "upper": 1540
+        },
+        {
+          "date": "2026-09-22",
+          "expected": 1208,
+          "lower": 786,
+          "upper": 1630
+        },
+        {
+          "date": "2026-09-23",
+          "expected": 1342,
+          "lower": 873,
+          "upper": 1811
+        },
+        {
+          "date": "2026-09-24",
+          "expected": 1409,
+          "lower": 916,
+          "upper": 1902
+        },
+        {
+          "date": "2026-09-25",
+          "expected": 1544,
+          "lower": 1004,
+          "upper": 2084
+        },
+        {
+          "date": "2026-09-26",
+          "expected": 1678,
+          "lower": 1091,
+          "upper": 2265
+        },
+        {
+          "date": "2026-09-27",
+          "expected": 1476,
+          "lower": 960,
+          "upper": 1992
+        },
+        {
+          "date": "2026-09-28",
+          "expected": 1141,
+          "lower": 742,
+          "upper": 1540
+        },
+        {
+          "date": "2026-09-29",
+          "expected": 1208,
+          "lower": 786,
+          "upper": 1630
+        },
+        {
+          "date": "2026-09-30",
+          "expected": 1342,
+          "lower": 873,
+          "upper": 1811
+        },
+        {
+          "date": "2026-10-01",
+          "expected": 1409,
+          "lower": 916,
+          "upper": 1902
+        },
+        {
+          "date": "2026-10-02",
+          "expected": 1544,
+          "lower": 1004,
+          "upper": 2084
+        },
+        {
+          "date": "2026-10-03",
+          "expected": 1678,
+          "lower": 1091,
+          "upper": 2265
+        }
+      ]
+    },
+    "resilience": {
+      "worker_id": "W003",
+      "safe_to_spend_daily": 1400,
+      "resilience_score": 78,
+      "resilience_days": 42,
+      "buffer_target": 13980,
+      "buffer_current": 30000,
+      "recommended_save": 0,
+      "mode": "WATCH",
+      "wallet_allocation": {
+        "daily": 42000,
+        "bills": 10800,
+        "buffer": 30000,
+        "growth": 0
+      },
+      "score_breakdown": {
+        "income_stability": 11,
+        "emergency_buffer": 25,
+        "expense_coverage": 12,
+        "debt_burden": 15,
+        "savings_consistency": 15
+      }
+    },
+    "obligations": {
+      "worker_id": "W003",
+      "upcoming_obligations": [
+        {
+          "name": "Rent",
+          "amount": 9600,
+          "due_date": "2026-09-15",
+          "category": "FIXED"
+        },
+        {
+          "name": "Electricity",
+          "amount": 1200,
+          "due_date": "2026-09-12",
+          "category": "UTILITY"
+        }
+      ],
+      "total_upcoming": 10800,
+      "essential_daily_spend": 699
+    },
+    "recommendations": [
+      {
+        "type": "SAVE",
+        "priority": "HIGH",
+        "amount": 200,
+        "message": "Move ₹200 to your emergency buffer",
+        "reason": "Income dip predicted in the next 8 days"
+      },
+      {
+        "type": "REDUCE_SPEND",
+        "priority": "MEDIUM",
+        "amount": null,
+        "message": "Trim discretionary spending this week",
+        "reason": "Forecast trend is rising"
+      },
+      {
+        "type": "AVOID_CREDIT",
+        "priority": "HIGH",
+        "amount": null,
+        "message": "You don't need a loan right now",
+        "reason": "Your buffer + expected income can cover the shortfall"
+      }
+    ]
+  },
+  "W004": {
+    "worker": {
+      "worker_id": "W004",
+      "name": "Meena Devi",
+      "occupation": "Domestic / Informal Worker",
+      "current_balance": 3100
+    },
+    "risk": {
+      "worker_id": "W004",
+      "risk_score": 0.88,
+      "risk_level": "HIGH",
+      "confidence": 0.91,
+      "top_factors": [
+        {
+          "feature": "expense_to_income_ratio",
+          "impact": 0.3,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "near_zero_buffer",
+          "impact": 0.27,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "dependents",
+          "impact": 0.15,
+          "direction": "increases_risk"
+        }
+      ]
+    },
+    "forecast": {
+      "worker_id": "W004",
+      "next_7_days": 3266,
+      "next_30_days": 14000,
+      "lower_bound": 12320,
+      "upper_bound": 15680,
+      "trend": "STABLE",
+      "shock_probability": 0.71,
+      "weather": "SHOCK",
+      "daily_forecast": [
+        {
+          "date": "2026-09-04",
+          "expected": 536,
+          "lower": 349,
+          "upper": 723
+        },
+        {
+          "date": "2026-09-05",
+          "expected": 583,
+          "lower": 379,
+          "upper": 787
+        },
+        {
+          "date": "2026-09-06",
+          "expected": 513,
+          "lower": 334,
+          "upper": 692
+        },
+        {
+          "date": "2026-09-07",
+          "expected": 396,
+          "lower": 258,
+          "upper": 534
+        },
+        {
+          "date": "2026-09-08",
+          "expected": 420,
+          "lower": 273,
+          "upper": 567
+        },
+        {
+          "date": "2026-09-09",
+          "expected": 466,
+          "lower": 303,
+          "upper": 629
+        },
+        {
+          "date": "2026-09-10",
+          "expected": 490,
+          "lower": 319,
+          "upper": 661
+        },
+        {
+          "date": "2026-09-11",
+          "expected": 375,
+          "lower": 244,
+          "upper": 506
+        },
+        {
+          "date": "2026-09-12",
+          "expected": 408,
+          "lower": 266,
+          "upper": 550
+        },
+        {
+          "date": "2026-09-13",
+          "expected": 359,
+          "lower": 234,
+          "upper": 484
+        },
+        {
+          "date": "2026-09-14",
+          "expected": 277,
+          "lower": 181,
+          "upper": 373
+        },
+        {
+          "date": "2026-09-15",
+          "expected": 294,
+          "lower": 192,
+          "upper": 396
+        },
+        {
+          "date": "2026-09-16",
+          "expected": 326,
+          "lower": 212,
+          "upper": 440
+        },
+        {
+          "date": "2026-09-17",
+          "expected": 343,
+          "lower": 223,
+          "upper": 463
+        },
+        {
+          "date": "2026-09-18",
+          "expected": 375,
+          "lower": 244,
+          "upper": 506
+        },
+        {
+          "date": "2026-09-19",
+          "expected": 408,
+          "lower": 266,
+          "upper": 550
+        },
+        {
+          "date": "2026-09-20",
+          "expected": 359,
+          "lower": 234,
+          "upper": 484
+        },
+        {
+          "date": "2026-09-21",
+          "expected": 396,
+          "lower": 258,
+          "upper": 534
+        },
+        {
+          "date": "2026-09-22",
+          "expected": 420,
+          "lower": 273,
+          "upper": 567
+        },
+        {
+          "date": "2026-09-23",
+          "expected": 466,
+          "lower": 303,
+          "upper": 629
+        },
+        {
+          "date": "2026-09-24",
+          "expected": 490,
+          "lower": 319,
+          "upper": 661
+        },
+        {
+          "date": "2026-09-25",
+          "expected": 536,
+          "lower": 349,
+          "upper": 723
+        },
+        {
+          "date": "2026-09-26",
+          "expected": 583,
+          "lower": 379,
+          "upper": 787
+        },
+        {
+          "date": "2026-09-27",
+          "expected": 513,
+          "lower": 334,
+          "upper": 692
+        },
+        {
+          "date": "2026-09-28",
+          "expected": 396,
+          "lower": 258,
+          "upper": 534
+        },
+        {
+          "date": "2026-09-29",
+          "expected": 420,
+          "lower": 273,
+          "upper": 567
+        },
+        {
+          "date": "2026-09-30",
+          "expected": 466,
+          "lower": 303,
+          "upper": 629
+        },
+        {
+          "date": "2026-10-01",
+          "expected": 490,
+          "lower": 319,
+          "upper": 661
+        },
+        {
+          "date": "2026-10-02",
+          "expected": 536,
+          "lower": 349,
+          "upper": 723
+        },
+        {
+          "date": "2026-10-03",
+          "expected": 583,
+          "lower": 379,
+          "upper": 787
+        }
+      ]
+    },
+    "resilience": {
+      "worker_id": "W004",
+      "safe_to_spend_daily": 58,
+      "resilience_score": 39,
+      "resilience_days": 1,
+      "buffer_target": 11100,
+      "buffer_current": 500,
+      "recommended_save": 0,
+      "mode": "SHOCK",
+      "wallet_allocation": {
+        "daily": 1752,
+        "bills": 8100,
+        "buffer": 500,
+        "growth": 0
+      },
+      "score_breakdown": {
+        "income_stability": 20,
+        "emergency_buffer": 1,
+        "expense_coverage": 7,
+        "debt_burden": 10,
+        "savings_consistency": 1
+      }
+    },
+    "obligations": {
+      "worker_id": "W004",
+      "upcoming_obligations": [
+        {
+          "name": "Rent",
+          "amount": 5400,
+          "due_date": "2026-09-15",
+          "category": "FIXED"
+        },
+        {
+          "name": "EMI",
+          "amount": 1500,
+          "due_date": "2026-09-10",
+          "category": "DEBT"
+        },
+        {
+          "name": "Electricity",
+          "amount": 1200,
+          "due_date": "2026-09-12",
+          "category": "UTILITY"
+        }
+      ],
+      "total_upcoming": 8100,
+      "essential_daily_spend": 370
+    },
+    "recommendations": [
+      {
+        "type": "SAVE",
+        "priority": "HIGH",
+        "amount": 300,
+        "message": "Your safety buffer is critically low — prioritise saving",
+        "reason": "Only 1 days of cover remaining"
+      },
+      {
+        "type": "SAVE",
+        "priority": "HIGH",
+        "amount": 200,
+        "message": "Move ₹200 to your emergency buffer",
+        "reason": "Income dip predicted in the next 8 days"
+      },
+      {
+        "type": "REDUCE_SPEND",
+        "priority": "MEDIUM",
+        "amount": null,
+        "message": "Trim discretionary spending this week",
+        "reason": "Forecast trend is stable"
+      },
+      {
+        "type": "AVOID_CREDIT",
+        "priority": "HIGH",
+        "amount": null,
+        "message": "You don't need a loan right now",
+        "reason": "Your buffer + expected income can cover the shortfall"
+      }
+    ]
+  },
+  "W005": {
+    "worker": {
+      "worker_id": "W005",
+      "name": "Suresh Reddy",
+      "occupation": "Part-Time Driver",
+      "current_balance": 9800
+    },
+    "risk": {
+      "worker_id": "W005",
+      "risk_score": 0.44,
+      "risk_level": "MODERATE",
+      "confidence": 0.82,
+      "top_factors": [
+        {
+          "feature": "rising_income",
+          "impact": 0.2,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "thin_buffer",
+          "impact": 0.18,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "moderate_debt",
+          "impact": 0.12,
+          "direction": "increases_risk"
+        }
+      ]
+    },
+    "forecast": {
+      "worker_id": "W005",
+      "next_7_days": 4699,
+      "next_30_days": 20140,
+      "lower_bound": 17440,
+      "upper_bound": 22840,
+      "trend": "RISING",
+      "shock_probability": 0.3,
+      "weather": "STABLE",
+      "daily_forecast": [
+        {
+          "date": "2026-09-04",
+          "expected": 772,
+          "lower": 502,
+          "upper": 1042
+        },
+        {
+          "date": "2026-09-05",
+          "expected": 839,
+          "lower": 546,
+          "upper": 1132
+        },
+        {
+          "date": "2026-09-06",
+          "expected": 738,
+          "lower": 480,
+          "upper": 996
+        },
+        {
+          "date": "2026-09-07",
+          "expected": 570,
+          "lower": 371,
+          "upper": 769
+        },
+        {
+          "date": "2026-09-08",
+          "expected": 604,
+          "lower": 393,
+          "upper": 815
+        },
+        {
+          "date": "2026-09-09",
+          "expected": 671,
+          "lower": 437,
+          "upper": 905
+        },
+        {
+          "date": "2026-09-10",
+          "expected": 704,
+          "lower": 458,
+          "upper": 950
+        },
+        {
+          "date": "2026-09-11",
+          "expected": 772,
+          "lower": 502,
+          "upper": 1042
+        },
+        {
+          "date": "2026-09-12",
+          "expected": 839,
+          "lower": 546,
+          "upper": 1132
+        },
+        {
+          "date": "2026-09-13",
+          "expected": 738,
+          "lower": 480,
+          "upper": 996
+        },
+        {
+          "date": "2026-09-14",
+          "expected": 570,
+          "lower": 371,
+          "upper": 769
+        },
+        {
+          "date": "2026-09-15",
+          "expected": 604,
+          "lower": 393,
+          "upper": 815
+        },
+        {
+          "date": "2026-09-16",
+          "expected": 671,
+          "lower": 437,
+          "upper": 905
+        },
+        {
+          "date": "2026-09-17",
+          "expected": 704,
+          "lower": 458,
+          "upper": 950
+        },
+        {
+          "date": "2026-09-18",
+          "expected": 772,
+          "lower": 502,
+          "upper": 1042
+        },
+        {
+          "date": "2026-09-19",
+          "expected": 839,
+          "lower": 546,
+          "upper": 1132
+        },
+        {
+          "date": "2026-09-20",
+          "expected": 738,
+          "lower": 480,
+          "upper": 996
+        },
+        {
+          "date": "2026-09-21",
+          "expected": 570,
+          "lower": 371,
+          "upper": 769
+        },
+        {
+          "date": "2026-09-22",
+          "expected": 604,
+          "lower": 393,
+          "upper": 815
+        },
+        {
+          "date": "2026-09-23",
+          "expected": 671,
+          "lower": 437,
+          "upper": 905
+        },
+        {
+          "date": "2026-09-24",
+          "expected": 704,
+          "lower": 458,
+          "upper": 950
+        },
+        {
+          "date": "2026-09-25",
+          "expected": 772,
+          "lower": 502,
+          "upper": 1042
+        },
+        {
+          "date": "2026-09-26",
+          "expected": 839,
+          "lower": 546,
+          "upper": 1132
+        },
+        {
+          "date": "2026-09-27",
+          "expected": 738,
+          "lower": 480,
+          "upper": 996
+        },
+        {
+          "date": "2026-09-28",
+          "expected": 570,
+          "lower": 371,
+          "upper": 769
+        },
+        {
+          "date": "2026-09-29",
+          "expected": 604,
+          "lower": 393,
+          "upper": 815
+        },
+        {
+          "date": "2026-09-30",
+          "expected": 671,
+          "lower": 437,
+          "upper": 905
+        },
+        {
+          "date": "2026-10-01",
+          "expected": 704,
+          "lower": 458,
+          "upper": 950
+        },
+        {
+          "date": "2026-10-02",
+          "expected": 772,
+          "lower": 502,
+          "upper": 1042
+        },
+        {
+          "date": "2026-10-03",
+          "expected": 839,
+          "lower": 546,
+          "upper": 1132
+        }
+      ]
+    },
+    "resilience": {
+      "worker_id": "W005",
+      "safe_to_spend_daily": 300,
+      "resilience_score": 47,
+      "resilience_days": 4,
+      "buffer_target": 8480,
+      "buffer_current": 1800,
+      "recommended_save": 334,
+      "mode": "RECOVERY",
+      "wallet_allocation": {
+        "daily": 9016,
+        "bills": 8400,
+        "buffer": 1800,
+        "growth": 490
+      },
+      "score_breakdown": {
+        "income_stability": 19,
+        "emergency_buffer": 3,
+        "expense_coverage": 10,
+        "debt_burden": 12,
+        "savings_consistency": 3
+      }
+    },
+    "obligations": {
+      "worker_id": "W005",
+      "upcoming_obligations": [
+        {
+          "name": "Rent",
+          "amount": 6000,
+          "due_date": "2026-09-15",
+          "category": "FIXED"
+        },
+        {
+          "name": "EMI",
+          "amount": 1200,
+          "due_date": "2026-09-10",
+          "category": "DEBT"
+        },
+        {
+          "name": "Electricity",
+          "amount": 1200,
+          "due_date": "2026-09-12",
+          "category": "UTILITY"
+        }
+      ],
+      "total_upcoming": 8400,
+      "essential_daily_spend": 424
+    },
+    "recommendations": [
+      {
+        "type": "SAVE",
+        "priority": "HIGH",
+        "amount": 300,
+        "message": "Your safety buffer is critically low — prioritise saving",
+        "reason": "Only 4 days of cover remaining"
+      },
+      {
+        "type": "SAVE",
+        "priority": "MEDIUM",
+        "amount": 334,
+        "message": "On track — save ₹334 toward your buffer",
+        "reason": "Income is stable; build toward 30 resilience days"
+      }
+    ]
+  }
+}
