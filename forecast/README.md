@@ -41,7 +41,23 @@ Both commands must finish with `passed`.
 - `weather` is `STABLE`, `WATCH`, or `SHOCK`.
 - The object validates as the team's `ForecastResult` contract.
 
-## 4. Train with real historical income (optional)
+## 4. Generate reproducible demo training data
+
+This creates 200 synthetic workers with 180 daily income records each. It has
+weekday patterns, platform differences, gradual trends, days without work, and
+short income shocks. It validates the pipeline but **does not prove real-world
+accuracy**.
+
+```powershell
+python forecast/generate_demo_data.py
+python forecast/train.py forecast/demo_income_history.csv
+python forecast/evaluate.py forecast/demo_income_history.csv
+```
+
+The CSV and model are intentionally ignored by Git and can be regenerated at
+any time. Record the resulting MAE/RMSE as **synthetic-validation metrics**.
+
+## 5. Train with real historical income
 
 Create a CSV outside source control (for example `my_income_history.csv`) with
 at least 40 daily rows for a worker; 60+ is preferable:
@@ -81,7 +97,7 @@ Expected output:
 `mae` is the average daily error in rupees and is the main accuracy metric to
 report. Lower is better.
 
-## 5. End-to-end API smoke test
+## 6. End-to-end API smoke test
 
 Start the backend in one PowerShell window:
 

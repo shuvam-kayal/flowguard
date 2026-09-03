@@ -24,17 +24,21 @@ def evaluate_model(records: Iterable[dict], model_path: str | Path) -> dict[str,
     groups: dict[str, list[dict]] = {}
     for record in records:
         groups.setdefault(str(record.get("worker_id", "default")), []).append(record)
-    errors: list[float] = []
+    feature_matrix: list[list[float]] = []
+    actuals: list[float] = []
     for worker_records in groups.values():
         series = daily_income_series(worker_records)
         values = [income for _, income in series]
         start = max(MIN_MODEL_HISTORY, int(len(values) * 0.8))
         for index in range(start, len(values)):
             row = feature_row(values[:index], series[index][0])
-            prediction = float(model.predict([[row[name] for name in FEATURE_NAMES]])[0])
-            errors.append(values[index] - prediction)
-    if not errors:
+            feature_matrix.append([row[name] for name in FEATURE_NAMES])
+            actuals.append(values[index])
+    if not actuals:
         raise ValueError("Not enough data for an out-of-time evaluation.")
+    # One batched call avoids thousands of expensive tiny Random Forest calls.
+    predictions = model.predict(feature_matrix)
+    errors = [actual - float(prediction) for actual, prediction in zip(actuals, predictions)]
     return {"observations": len(errors), "mae": round(sum(abs(error) for error in errors) / len(errors), 2),
             "rmse": round(sqrt(sum(error ** 2 for error in errors) / len(errors)), 2)}
 
