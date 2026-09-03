@@ -5,13 +5,15 @@ Real skeleton, contract-shaped output (CreditGuardResult, #7).
 
 
 def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: int) -> dict:
+    requested = max(0, int(requested))
     savings = 0  # keep long-term savings untouched by default
-    buffer_available = resilience["buffer_current"]
+    buffer_available = min(requested, max(0, resilience["buffer_current"]))
     remaining = max(0, requested - savings - buffer_available)
     # a slice of expected income can absorb part of the need
     future = min(remaining, int(forecast["next_30_days"] * 0.1))
     credit = max(0, remaining - future)
-    safe_repay = int(credit * 0.25)  # cap repayment ~25% of credit/month
+    disposable = max(0, int(profile.get("monthly_income_avg", 0)) - int(profile.get("total_monthly_expenses", 0)))
+    safe_repay = min(int(credit * 0.25), int(disposable * 0.25))
 
     if requested <= savings + buffer_available:
         decision = "NO_CREDIT_NEEDED"

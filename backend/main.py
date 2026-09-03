@@ -33,7 +33,7 @@ def _load(name):
 
 
 # ---- toggle: use mocks or real modules -------------------------------------
-USE_REAL_MODULES = False  # flip to True at integration checkpoint 2
+USE_REAL_MODULES = True
 
 
 def get_dashboard(worker_id: str) -> dict:
@@ -81,14 +81,36 @@ def worker_dashboard(worker_id: str):
     return get_dashboard(worker_id)
 
 
+@app.post("/ml/risk")
+def risk_endpoint(payload: dict):
+    from ml.predict import predict_risk
+    return predict_risk(payload.get("profile", payload), payload.get("history"))
+
+
+@app.post("/forecast/income")
+def forecast_endpoint(payload: dict):
+    from forecast.predict import forecast_income
+    return forecast_income(payload.get("profile", payload), payload.get("history"))
+
+
+@app.post("/resilience/evaluate")
+def resilience_endpoint(payload: dict):
+    from resilience.engine import evaluate, recommend
+    profile, risk, forecast, obligations = (payload["profile"], payload["risk"], payload["forecast"], payload["obligations"])
+    result = evaluate(profile, risk, forecast, obligations)
+    return {**result, "recommendations": recommend(profile, result, forecast)}
+
+
 @app.post("/credit/evaluate")
 def credit_evaluate(payload: dict):
-    """payload: {worker_id, requested_amount}. Serves mock credit for now."""
-    credits = _load("sample_credit.json")
     wid = payload.get("worker_id", "W001")
-    if wid not in credits:
+    dashboard = get_dashboard(wid)
+    from resilience.credit_guard import evaluate_credit
+    personas = {p["worker_id"]: p for p in _load("personas.json")["personas"]}
+    if wid not in personas:
         raise HTTPException(404, f"Unknown worker {wid}")
-    return credits[wid]
+    requested = max(0, int(payload.get("requested_amount", 0)))
+    return evaluate_credit(personas[wid], dashboard["resilience"], dashboard["forecast"], requested)
 
 
 def _apply_shock(dash: dict, factor: float) -> dict:

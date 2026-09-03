@@ -10,20 +10,34 @@ behave like a stable salary, and use credit only as a last resort.
 
 ### Backend (Person 4)
 ```bash
-pip install -r requirements.txt
+.venv\Scripts\python -m pip install -r requirements.txt pytest  # Windows
+# source .venv/bin/activate && python -m pip install -r requirements.txt pytest  # macOS/Linux
 python data/demo/generate_mocks.py        # (re)build demo data
-uvicorn backend.main:app --reload --port 8000
+.venv\Scripts\python -m uvicorn backend.main:app --reload --port 8000
 # open http://localhost:8000/docs
+```
+
+Create the environment once before running the commands above:
+```bash
+python -m venv .venv
+```
+
+### Verify
+```bash
+.venv\Scripts\python tests\test_contracts.py
+.venv\Scripts\python -m pytest -q
 ```
 
 ### Frontend (Person 5)
 ```bash
-cd frontend
-# scaffold Next.js here (npx create-next-app .), then:
-# import components/DashboardStarter.jsx and lib/api.js
-# set NEXT_PUBLIC_API_URL=http://localhost:8000
+python -m http.server 5173 --directory frontend
+# open http://localhost:5173
 ```
-Frontend also works with **zero backend** via `public/mock_dashboards.json`.
+The standalone frontend connects to `http://127.0.0.1:8000` by default. Use
+`http://localhost:5173/?api=http://localhost:8000` to override the backend URL.
+It includes worker switching, Safe-to-Spend, Financial Weather, forecast
+visualization, wallet allocation, explainable recommendations, Credit Guard,
+and the shock/recovery simulation flow.
 
 ## Architecture
 ```
@@ -40,6 +54,18 @@ transactions → FinancialProfile
 - Human: `docs/api-contract.md`
 - Code:  `backend/schemas/contracts.py` (Pydantic — validates everything)
 - Demo data: `data/demo/sample_*.json` (all validate against the contracts)
+
+## Runtime implementation
+
+Risk and forecasting are live by default. `ml/features.py` uses only
+transaction/income-derived signals: volatility, trend, expense burden, buffer
+coverage, debt-service burden, and income gap. `ml/predict.py` loads an
+optional `ml/model.pkl` trained with `python -m ml.train <csv>` and otherwise
+uses an explainable cold-start scorer. `forecast/predict.py` generates rolling
+30-day estimates, uncertainty bands, and Financial Weather without an artifact.
+
+Predictions adjust policy; the credit path remains deterministic and applies
+the savings → buffer → future income → affordability-capped credit waterfall.
 
 ## Personas (shared test characters)
 W001 Ravi (hero, HIGH/WATCH) · W002 Aisha (healthy, LOW) · W003 Arjun (freelancer, volatile) ·
