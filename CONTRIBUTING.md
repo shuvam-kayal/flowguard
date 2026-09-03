@@ -15,10 +15,12 @@ Shared file everyone reads, nobody edits alone: **`docs/api-contract.md`** and
 **`backend/schemas/contracts.py`**. Contract changes are a team decision.
 
 ## Day-1 rule: build against mocks, never wait
-Every module has a stub in its folder + matching mock in `/data/demo`.
+Every module has matching mock data in `/data/demo`; runtime modules also have
+safe cold-start implementations that preserve the same contracts.
 - P5 builds the whole UI from `frontend/public/mock_dashboards.json` — no backend needed.
 - P3 tests `resilience/engine.py` against `data/demo/sample_*.json` — no ML needed.
-- P1/P2 build real models; their stubs already return correct shapes.
+- P1/P2 can retrain models independently; the deployed fallback remains
+  deterministic and contract-compatible until a model artifact is available.
 
 ## Regenerate mocks after any contract change
 ```bash

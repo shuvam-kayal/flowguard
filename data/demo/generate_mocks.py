@@ -300,7 +300,7 @@ def main():
     }
     for fname, data in out.items():
         path = os.path.join(HERE, fname)
-        with open(path, "w") as fh:
+        with open(path, "w", encoding="utf-8") as fh:
             json.dump(data, fh, indent=2, ensure_ascii=False)
         print(f"wrote {fname}  ({len(data)} personas)")
 
