@@ -1,2 +1,5 @@
-export const WORKER_ID = "W001";
-export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "false";
+/** Default worker ID used when no selection has been made. */
+export const DEFAULT_WORKER_ID = "W001";
+
+/** Stale time for TanStack Query dashboard queries (ms). */
+export const QUERY_STALE_TIME = 2 * 60 * 1000; // 2 minutes

@@ -1,1 +1,5 @@
-export type { ResilienceResult } from "./dashboard";
+export type {
+  ResilienceResult,
+  WalletAllocation,
+  ScoreBreakdown,
+} from "./dashboard";
