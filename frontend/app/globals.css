@@ -2,14 +2,167 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color: #16231a; background: #f6f8f5; }
-* { box-sizing: border-box; }
-body { margin: 0; min-height: 100vh; background: #f6f8f5; color: #16231a; font-family: Arial, Helvetica, sans-serif; }
-button, input, select { font: inherit; }
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #8dd7ae; outline-offset: 3px; }
+/* ─── CSS Custom Properties ───────────────────────────────────────────────── */
+:root {
+  --font-inter: "Inter", system-ui, sans-serif;
+
+  /* Brand */
+  --color-brand:        #087344;
+  --color-brand-dark:   #065e36;
+  --color-brand-mid:    #23aa6b;
+  --color-brand-light:  #dff1e8;
+  --color-brand-faint:  #f1faf4;
+
+  /* Danger */
+  --color-danger:       #b93a3a;
+  --color-danger-light: #fff6f6;
+
+  /* Warning */
+  --color-warning:      #b66b0b;
+  --color-warning-light: #fff8ed;
+
+  /* Neutrals */
+  --color-text:         #16231a;
+  --color-muted:        #718078;
+  --color-border:       #e4ebe5;
+  --color-surface:      #f6f8f5;
+  --color-white:        #ffffff;
+
+  /* Sidebar */
+  --color-sidebar-bg:   #0f3726;
+
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+/* ─── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea { font: inherit; }
+
+/* Focus ring — accessible, on-brand */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 3px solid #8dd7ae;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─── Tailwind Components ─────────────────────────────────────────────────── */
 @layer components {
-  .panel { @apply rounded-2xl border border-[#e4ebe5] bg-white p-5 shadow-[0_8px_28px_rgba(21,48,30,.045)]; }
-  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[.12em] text-[#718078]; }
-  .muted { @apply text-sm text-[#718078]; }
-  .status-pill { @apply inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide; }
+  /* Card / panel */
+  .panel {
+    @apply rounded-2xl border border-[#e4ebe5] bg-white p-5
+           shadow-[0_4px_24px_rgba(21,48,30,.06)]
+           transition-shadow duration-200 hover:shadow-[0_8px_32px_rgba(21,48,30,.10)];
+  }
+
+  /* Micro label above headings */
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[.12em] text-[#718078];
+  }
+
+  /* Dimmed body text */
+  .muted {
+    @apply text-sm leading-relaxed text-[#718078];
+  }
+
+  /* Status pill badges */
+  .status-pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-1
+           text-[11px] font-bold tracking-wide;
+  }
+  .status-pill-green  { @apply status-pill bg-[#dff1e8] text-[#087344]; }
+  .status-pill-amber  { @apply status-pill bg-[#fff0d6] text-[#9a570a]; }
+  .status-pill-red    { @apply status-pill bg-[#fde8e8] text-[#9b2c2c]; }
+  .status-pill-blue   { @apply status-pill bg-[#e8f0fe] text-[#1a56db]; }
+
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-xl bg-[#087344] px-5 py-2.5
+           text-sm font-bold text-white shadow-sm
+           hover:bg-[#065e36] active:scale-[.97]
+           transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[#8dd7ae];
+  }
+
+  /* Ghost / outline button */
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-xl border border-[#e4ebe5]
+           bg-white px-5 py-2.5 text-sm font-bold text-[#526158]
+           hover:border-[#c0d0c4] hover:bg-[#f6f8f5] active:scale-[.97]
+           transition-all duration-150;
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply inline-flex items-center gap-2 rounded-xl bg-[#b93a3a] px-5 py-2.5
+           text-sm font-bold text-white shadow-sm
+           hover:bg-[#9b2c2c] active:scale-[.97]
+           transition-all duration-150;
+  }
+
+  /* Progress bar track */
+  .progress-track {
+    @apply h-2 overflow-hidden rounded-full bg-[#edf2ee];
+  }
+  .progress-fill-green { @apply h-full rounded-full bg-[#23aa6b] transition-all duration-700; }
+  .progress-fill-amber { @apply h-full rounded-full bg-[#e8a838] transition-all duration-700; }
+  .progress-fill-red   { @apply h-full rounded-full bg-[#b93a3a] transition-all duration-700; }
+
+  /* Form inputs */
+  .input {
+    @apply w-full rounded-xl border border-[#dfe7e1] bg-white px-4 py-3 text-sm
+           placeholder:text-[#a0b0a8]
+           focus:border-[#23aa6b] focus:outline-none focus:ring-2 focus:ring-[#23aa6b]/20
+           transition-colors duration-150;
+  }
+  .input-error {
+    @apply border-[#b93a3a] focus:border-[#b93a3a] focus:ring-[#b93a3a]/20;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply panel flex flex-col gap-1;
+  }
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.35s ease both;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(.22,1,.36,1) both;
+  }
+  .animate-slide-in-right {
+    animation: slideInRight 0.35s cubic-bezier(.22,1,.36,1) both;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
 }

@@ -1,1 +1,3 @@
-export type { Recommendation } from "./dashboard";
+export type {
+  Recommendation,
+} from "./dashboard";

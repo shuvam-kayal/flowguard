@@ -1,22 +1,73 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { getDashboard, setScenario as setApiScenario } from "@/lib/api";
-import { WORKER_ID } from "@/lib/constants";
-import type { DashboardData, Scenario } from "@/types/dashboard";
+import { createContext, useContext, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getDashboardForScenario } from "@/lib/api";
+import { DEFAULT_WORKER_ID } from "@/lib/constants";
+import type { DashboardResponse, Scenario } from "@/types/dashboard";
 
-interface ScenarioContextValue { data: DashboardData | null; scenario: Scenario; setScenario: (scenario: Scenario) => void; loading: boolean; error: string | null; }
+// ─── Context Shape ────────────────────────────────────────────────────────────
+
+interface ScenarioContextValue {
+  data: DashboardResponse | null;
+  scenario: Scenario;
+  setScenario: (scenario: Scenario) => void;
+  /** The active worker ID — exposed so pages like Credit can pass it to the API. */
+  workerId: string;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
 const ScenarioContext = createContext<ScenarioContextValue | null>(null);
 
+// ─── Provider ─────────────────────────────────────────────────────────────────
+
 export function ScenarioProvider({ children }: { children: React.ReactNode }) {
-  const [scenario, updateScenario] = useState<Scenario>("NORMAL");
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    setLoading(true); setError(null); setApiScenario(scenario);
-    getDashboard(WORKER_ID).then(setData).catch(() => setError("Unable to load your financial data.")).finally(() => setLoading(false));
-  }, [scenario]);
-  return <ScenarioContext.Provider value={{ data, scenario, setScenario: updateScenario, loading, error }}>{children}</ScenarioContext.Provider>;
+  const [scenario, setScenario] = useState<Scenario>("NORMAL");
+  // Worker is fixed at DEFAULT_WORKER_ID for this demo. If multi-worker support
+  // is needed, lift this into a separate WorkerProvider or URL param.
+  const workerId = DEFAULT_WORKER_ID;
+
+  const {
+    data = null,
+    isFetching,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: ["dashboard", workerId, scenario],
+    queryFn: () => getDashboardForScenario(workerId, scenario),
+  });
+
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : queryError
+      ? "Unable to load your financial data."
+      : null;
+
+  return (
+    <ScenarioContext.Provider
+      value={{
+        data,
+        scenario,
+        setScenario,
+        workerId,
+        loading: isLoading || isFetching,
+        error,
+        refetch,
+      }}
+    >
+      {children}
+    </ScenarioContext.Provider>
+  );
 }
-export function useScenario() { const context = useContext(ScenarioContext); if (!context) throw new Error("useScenario must be used inside ScenarioProvider"); return context; }
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useScenario(): ScenarioContextValue {
+  const ctx = useContext(ScenarioContext);
+  if (!ctx) throw new Error("useScenario must be used inside ScenarioProvider");
+  return ctx;
+}

@@ -1,1 +1,1 @@
-export type { Worker } from "./dashboard";
+export type { WorkerSummary, WorkerListItem } from "./dashboard";
