@@ -10,7 +10,7 @@ from copy import deepcopy
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-
+from backend.services.income import get_income_history
 from backend.schemas.contracts import (
     DashboardResponse, FinancialProfile, ForecastResult, ObligationSummary,
     ResilienceResult, RiskResult,
@@ -42,7 +42,7 @@ app.add_middleware(
 # ---- toggle: use mocks or real modules -------------------------------------
 # Set to False to read pre-computed risk/resilience from the DB. 
 # Set to True to evaluate on-the-fly using the actual ML/engine modules.
-USE_REAL_MODULES = False
+USE_REAL_MODULES = True
 
 def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
     user = db.query(User).filter(User.worker_id == worker_id).first()
@@ -101,9 +101,10 @@ def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
 
         profile_data = {c.name: getattr(user, c.name) for c in user.__table__.columns}
         profile = FinancialProfile(**profile_data)
-        
+
+        history = get_income_history(worker_id, db)
         risk = predict_risk(profile)
-        forecast = forecast_income(profile)
+        forecast = forecast_income(profile, history)
         resilience = evaluate(profile, risk, forecast, obl_summary)
         recs = recommend(profile, resilience, forecast)
 
