@@ -6,9 +6,9 @@ balances, obligations, or income history.
 """
 from __future__ import annotations
 
-from math import sqrt
 from statistics import mean, pstdev
 from typing import Any, Iterable
+from constants import RISK_TREND_SCORES
 
 FEATURE_NAMES = (
     "income_volatility",
@@ -60,7 +60,7 @@ def build_features(profile: dict, history: list[Any] | None = None) -> dict[str,
     buffer = max(0.0, float(profile.get("emergency_buffer", 0)))
     debt = max(0.0, float(profile.get("monthly_emi", 0)))
     trend_label = str(profile.get("income_trend", "STABLE")).upper()
-    label_score = {"DECLINING": -0.6, "STABLE": 0.0, "RISING": 0.35}.get(trend_label, 0.0)
+    label_score = RISK_TREND_SCORES.get(trend_label, 0.0)
     trend_score = _trend(income) if len(income) >= 2 else label_score
 
     return {

@@ -1,25 +1,32 @@
-"""
-Person 3 — Credit Guard. The waterfall: savings -> buffer -> delay -> future income -> credit.
-Real skeleton, contract-shaped output (CreditGuardResult, #7).
-"""
+"""Credit Guard waterfall: savings → buffer → future income → credit."""
+from __future__ import annotations
+
+from backend.schemas.contracts import CreditGuardResult, FinancialProfile, ForecastResult, ResilienceResult
+from constants import CREDIT_FUTURE_INCOME_RATE, CREDIT_MIN_SERVICE_RATE, CREDIT_REPAYMENT_CAP_RATE
 
 
-def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: int) -> dict:
+def evaluate_credit(profile: FinancialProfile, resilience: ResilienceResult,
+                    forecast: ForecastResult, requested: int) -> CreditGuardResult:
+    profile = FinancialProfile.model_validate(profile)
+    resilience = ResilienceResult.model_validate(resilience)
+    forecast = ForecastResult.model_validate(forecast)
     requested = max(0, int(requested))
     savings = 0  # keep long-term savings untouched by default
-    buffer_available = min(requested, max(0, resilience["buffer_current"]))
+    buffer_available = min(requested, max(0, resilience.buffer_current))
     remaining = max(0, requested - savings - buffer_available)
     # a slice of expected income can absorb part of the need
-    future = min(remaining, int(forecast["next_30_days"] * 0.1))
+    future = min(remaining, int(forecast.next_30_days * CREDIT_FUTURE_INCOME_RATE))
     credit = max(0, remaining - future)
-    disposable = max(0, int(profile.get("monthly_income_avg", 0)) - int(profile.get("total_monthly_expenses", 0)))
-    safe_repay = min(int(credit * 0.25), int(disposable * 0.25))
+    disposable = max(0, profile.monthly_income_avg - profile.total_monthly_expenses)
+    safe_repay = min(int(credit * CREDIT_REPAYMENT_CAP_RATE), int(disposable * CREDIT_REPAYMENT_CAP_RATE))
 
     if requested <= savings + buffer_available:
         decision = "NO_CREDIT_NEEDED"
     elif credit <= 0:
         decision = "NO_CREDIT_NEEDED"
-    elif credit >= requested:
+    elif safe_repay < int(credit * CREDIT_MIN_SERVICE_RATE):
+        decision = "CREDIT_DECLINED"
+    elif credit == requested:
         decision = "FULL_CREDIT"
     else:
         decision = "PARTIAL_CREDIT"
@@ -28,20 +35,13 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
            f"Safe repayment \u20b9{safe_repay}/month.") if credit > 0 \
           else "Your buffer covers this \u2014 no credit needed."
 
-    return {
-        "worker_id": profile["worker_id"],
-        "requested_amount": requested,
-        "buffer_available": buffer_available,
-        "expected_shortfall": remaining,
-        "recommended_credit": credit,
-        "safe_monthly_repayment": safe_repay,
-        "decision": decision,
-        "waterfall": [
+    return CreditGuardResult(worker_id=profile.worker_id, requested_amount=requested,
+        buffer_available=buffer_available, expected_shortfall=remaining,
+        recommended_credit=credit, safe_monthly_repayment=safe_repay, decision=decision,
+        waterfall=[
             {"source": "savings", "amount": savings, "used": savings > 0},
             {"source": "emergency_buffer", "amount": buffer_available, "used": buffer_available > 0},
             {"source": "delay_expense", "amount": 0, "used": False},
             {"source": "future_income", "amount": future, "used": future > 0},
             {"source": "credit", "amount": credit, "used": credit > 0},
-        ],
-        "message": msg,
-    }
+        ], message=msg)

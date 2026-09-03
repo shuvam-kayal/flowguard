@@ -15,14 +15,27 @@ import os
 from copy import deepcopy
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from backend.schemas.contracts import (
+    DashboardResponse, FinancialProfile, ForecastResult, ObligationSummary,
+    ResilienceResult, RiskResult,
+)
+from constants import (
+    RECOVERY_MIN_RISK_SCORE, RECOVERY_RISK_DECREMENT,
+    RECOVERY_SCORE_INCREMENT, RECOVERY_SHOCK_PROBABILITY_DECREMENT,
+    RECOVERY_MIN_SHOCK_PROBABILITY, RECOVERY_SPEND_FACTOR,
+    SHOCK_DEFAULT_FACTOR, SHOCK_PROBABILITY_INCREMENT,
+    SHOCK_RISK_INCREMENT, SHOCK_MAX_PROBABILITY, SHOCK_MAX_RISK_SCORE,
+    SHOCK_SIMULATION_SPEND_FACTOR,
+)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEMO = os.path.join(ROOT, "data", "demo")
 
 app = FastAPI(title="FlowGuard API", version="0.1.0")
+_origins = [origin.strip() for origin in os.getenv("FLOWGUARD_ALLOWED_ORIGINS", "*").split(",") if origin.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # hackathon: open. Lock down for any real deploy.
+    allow_origins=_origins or ["*"],
     allow_methods=["*"], allow_headers=["*"],
 )
 
@@ -36,12 +49,12 @@ def _load(name):
 USE_REAL_MODULES = True
 
 
-def get_dashboard(worker_id: str) -> dict:
+def get_dashboard(worker_id: str) -> DashboardResponse:
     dashboards = _load("sample_dashboards.json")
     if worker_id not in dashboards:
         raise HTTPException(404, f"Unknown worker {worker_id}")
     if not USE_REAL_MODULES:
-        return dashboards[worker_id]
+        return DashboardResponse.model_validate(dashboards[worker_id])
 
     # ---- real orchestration path (enable at checkpoint 2) ----
     import sys
@@ -52,17 +65,17 @@ def get_dashboard(worker_id: str) -> dict:
 
     personas = {p["worker_id"]: p for p in _load("personas.json")["personas"]}
     obligations = _load("sample_obligations.json")
-    profile = personas[worker_id]
+    profile = FinancialProfile.model_validate(personas[worker_id])
     risk = predict_risk(profile)
     forecast = forecast_income(profile)
-    obl = obligations[worker_id]
+    obl = ObligationSummary.model_validate(obligations[worker_id])
     resilience = evaluate(profile, risk, forecast, obl)
     recs = recommend(profile, resilience, forecast)
-    return {
-        "worker": {k: profile[k] for k in ("worker_id", "name", "occupation", "current_balance")},
-        "risk": risk, "forecast": forecast, "resilience": resilience,
-        "obligations": obl, "recommendations": recs,
-    }
+    return DashboardResponse(
+        worker={k: getattr(profile, k) for k in ("worker_id", "name", "occupation", "current_balance")},
+        risk=risk, forecast=forecast, resilience=resilience,
+        obligations=obl, recommendations=recs,
+    )
 
 
 @app.get("/")
@@ -77,28 +90,31 @@ def list_workers():
 
 
 @app.get("/worker/{worker_id}/dashboard")
-def worker_dashboard(worker_id: str):
+def worker_dashboard(worker_id: str) -> DashboardResponse:
     return get_dashboard(worker_id)
 
 
 @app.post("/ml/risk")
 def risk_endpoint(payload: dict):
     from ml.predict import predict_risk
-    return predict_risk(payload.get("profile", payload), payload.get("history"))
+    return predict_risk(FinancialProfile.model_validate(payload.get("profile", payload)), payload.get("history"))
 
 
 @app.post("/forecast/income")
 def forecast_endpoint(payload: dict):
     from forecast.predict import forecast_income
-    return forecast_income(payload.get("profile", payload), payload.get("history"))
+    return forecast_income(FinancialProfile.model_validate(payload.get("profile", payload)), payload.get("history"))
 
 
 @app.post("/resilience/evaluate")
 def resilience_endpoint(payload: dict):
     from resilience.engine import evaluate, recommend
-    profile, risk, forecast, obligations = (payload["profile"], payload["risk"], payload["forecast"], payload["obligations"])
+    profile = FinancialProfile.model_validate(payload["profile"])
+    risk = RiskResult.model_validate(payload["risk"])
+    forecast = ForecastResult.model_validate(payload["forecast"])
+    obligations = ObligationSummary.model_validate(payload["obligations"])
     result = evaluate(profile, risk, forecast, obligations)
-    return {**result, "recommendations": recommend(profile, result, forecast)}
+    return {**result.model_dump(), "recommendations": [item.model_dump() for item in recommend(profile, result, forecast)]}
 
 
 @app.post("/credit/evaluate")
@@ -110,22 +126,24 @@ def credit_evaluate(payload: dict):
     if wid not in personas:
         raise HTTPException(404, f"Unknown worker {wid}")
     requested = max(0, int(payload.get("requested_amount", 0)))
-    return evaluate_credit(personas[wid], dashboard["resilience"], dashboard["forecast"], requested)
+    return evaluate_credit(FinancialProfile.model_validate(personas[wid]),
+                           ResilienceResult.model_validate(dashboard.resilience),
+                           ForecastResult.model_validate(dashboard.forecast), requested)
 
 
-def _apply_shock(dash: dict, factor: float) -> dict:
+def _apply_shock(dash: DashboardResponse, factor: float) -> DashboardResponse:
     """Simulate an income shock: cut forecast, spike risk, tighten resilience."""
-    d = deepcopy(dash)
+    d = deepcopy(DashboardResponse.model_validate(dash).model_dump())
     d["forecast"]["next_30_days"] = int(d["forecast"]["next_30_days"] * factor)
     d["forecast"]["next_7_days"] = int(d["forecast"]["next_7_days"] * factor)
     d["forecast"]["weather"] = "SHOCK"
     d["forecast"]["trend"] = "DECLINING"
-    d["forecast"]["shock_probability"] = min(0.95, d["forecast"]["shock_probability"] + 0.3)
-    d["risk"]["risk_score"] = min(0.95, d["risk"]["risk_score"] + 0.25)
+    d["forecast"]["shock_probability"] = min(SHOCK_MAX_PROBABILITY, d["forecast"]["shock_probability"] + SHOCK_PROBABILITY_INCREMENT)
+    d["risk"]["risk_score"] = min(SHOCK_MAX_RISK_SCORE, d["risk"]["risk_score"] + SHOCK_RISK_INCREMENT)
     d["risk"]["risk_level"] = "HIGH"
     r = d["resilience"]
     r["mode"] = "SHOCK"
-    r["safe_to_spend_daily"] = int(r["safe_to_spend_daily"] * 0.55)
+    r["safe_to_spend_daily"] = int(r["safe_to_spend_daily"] * SHOCK_SIMULATION_SPEND_FACTOR)
     r["wallet_allocation"]["growth"] = 0
     d["recommendations"] = [
         {"type": "USE_BUFFER", "priority": "HIGH", "amount": None,
@@ -138,32 +156,32 @@ def _apply_shock(dash: dict, factor: float) -> dict:
          "message": "Hold off on new borrowing",
          "reason": "Buffer still covers near-term needs"},
     ]
-    return d
+    return DashboardResponse(**d)
 
 
-def _apply_recovery(dash: dict) -> dict:
-    d = deepcopy(dash)
+def _apply_recovery(dash: DashboardResponse) -> DashboardResponse:
+    d = deepcopy(DashboardResponse.model_validate(dash).model_dump())
     d["forecast"]["weather"] = "STABLE"
     d["forecast"]["trend"] = "RISING"
-    d["forecast"]["shock_probability"] = max(0.15, d["forecast"]["shock_probability"] - 0.3)
-    d["risk"]["risk_score"] = max(0.2, d["risk"]["risk_score"] - 0.2)
+    d["forecast"]["shock_probability"] = max(RECOVERY_MIN_SHOCK_PROBABILITY, d["forecast"]["shock_probability"] - RECOVERY_SHOCK_PROBABILITY_DECREMENT)
+    d["risk"]["risk_score"] = round(max(RECOVERY_MIN_RISK_SCORE, d["risk"]["risk_score"] - RECOVERY_RISK_DECREMENT), 3)
     d["risk"]["risk_level"] = "MODERATE"
     r = d["resilience"]
     r["mode"] = "RECOVERY"
-    r["safe_to_spend_daily"] = int(r["safe_to_spend_daily"] * 1.4)
-    r["resilience_score"] = min(100, r["resilience_score"] + 10)
+    r["safe_to_spend_daily"] = int(r["safe_to_spend_daily"] * RECOVERY_SPEND_FACTOR)
+    r["resilience_score"] = min(100, r["resilience_score"] + RECOVERY_SCORE_INCREMENT)
     d["recommendations"] = [
         {"type": "SAVE", "priority": "MEDIUM", "amount": 400,
          "message": "Income recovering \u2014 rebuild your buffer with \u20b9400",
          "reason": "Trend turned positive"},
     ]
-    return d
+    return DashboardResponse(**d)
 
 
 @app.post("/simulate/shock")
 def simulate_shock(payload: dict):
     wid = payload.get("worker_id", "W001")
-    factor = payload.get("factor", 0.65)  # 35% income drop by default
+    factor = payload.get("factor", SHOCK_DEFAULT_FACTOR)
     return _apply_shock(get_dashboard(wid), factor)
 
 
