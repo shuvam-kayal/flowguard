@@ -26,17 +26,22 @@ def credit_evaluate(payload: dict):
 
     wid = payload.get("worker_id", "W001")
     requested = int(payload.get("requested_amount", 0))
-    dash = get_dashboard(wid)  # gives profile-ish worker + resilience + forecast
+    dash = get_dashboard(wid)  # gives worker + resilience + forecast
     personas = {p["worker_id"]: p for p in _load("personas.json")["personas"]}
     return evaluate_credit(personas[wid], dash["resilience"], dash["forecast"], requested)
 ```
 
-Validated output (real mode):
-```
-W001 req ₹5000  -> PARTIAL_CREDIT    credit ₹90    repay ₹30/mo
-W004 req ₹50000 -> PARTIAL_CREDIT    credit ₹8400  repay ₹2800/mo
-W002 req ₹1000  -> NO_CREDIT_NEEDED  credit ₹0
-```
+**Note:** Credit Guard's affordability cap is anchored to
+`resilience["safe_to_spend_daily"]` \u2014 the engine's own conservative
+liquidity number, with obligations/buffer already netted out exactly once.
+That's deliberate: an earlier version subtracted essentials and obligations
+independently and double-counted them (rent/EMI appear in both
+`essential_daily_spend` and `total_upcoming`), which made Credit Guard
+wrongly decline almost every request. Reusing `safe_to_spend_daily` avoids
+that and keeps the two modules' notion of "safe money" consistent.
+
+Signature is unchanged (no new required args) \u2014 no other change needed
+beyond swapping the mock for this call.
 
 ## 2. Route `/simulate/shock` and `/simulate/recovery` back through my engine
 
@@ -45,6 +50,26 @@ demo, build the degraded **forecast** (drop `next_30_days`, set `weather="SHOCK"
 raise `shock_probability`) and re-run my `evaluate()` + `recommend()` on it, so
 mode → SHOCK and safe-to-spend recomputes from real logic rather than a multiplier.
 Same for recovery with a `trend="RISING"` forecast. Ping me and we'll pair on it.
+
+## 3. Pass `obligations` to `recommend()` for accurate days-to-shock
+
+`recommend()` now computes a real "income dip predicted in N days" from
+Person 2's `daily_forecast`, instead of a hardcoded "8 days". It needs the
+real `essential_daily_spend` to do that, which comes from `obligations`. In
+`get_dashboard()`'s real-orchestration path, change:
+
+```python
+recs = recommend(profile, resilience, forecast)
+```
+to:
+```python
+recs = recommend(profile, resilience, forecast, obl)
+```
+
+This is backward compatible \u2014 `obligations` is an optional 4th arg, so
+nothing breaks if you don't get to this before the demo. Without it, the
+reason text falls back to an estimate from `fixed_expenses` instead of the
+real obligation figure.
 
 ## Contract note
 Everything I emit validates against `ResilienceResult`, `Recommendation`, and

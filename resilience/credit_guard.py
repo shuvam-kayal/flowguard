@@ -7,9 +7,18 @@ Real skeleton, contract-shaped output (CreditGuardResult, #7).
 def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: int) -> dict:
     """Credit Guard waterfall: savings -> buffer -> delay expense -> future income -> credit.
 
-    Credit is the LAST resort, and only ever offered up to what the worker can
-    safely repay. If even the safe credit slice can't close the gap, we decline
-    rather than hand out an unaffordable loan.
+    Credit is the LAST resort, capped at what the worker can safely repay out
+    of money they ALREADY have safely free to spend \u2014 not a flat share of
+    gross income, and not a second, independent essentials/obligations
+    subtraction (that double-counts: `essential_daily_spend` already
+    represents ~full monthly essential cost, and rent/EMI/utilities in
+    `total_upcoming` are already part of that figure).
+
+    Instead we anchor to `resilience["safe_to_spend_daily"]`, the engine's
+    own conservative-liquidity number: essentials, mandatory obligations,
+    and buffer protection are already netted out of it exactly once. Safe
+    repayment is a fraction of that already-safe monthly surplus, so
+    repayment can never eat into essentials or the buffer by construction.
     """
     requested = max(0, int(requested))
     savings = 0  # keep long-term savings untouched by default
@@ -27,13 +36,15 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
     future = min(remaining_after_delay, int(forecast["next_30_days"] * 0.10))
     gap = max(0, remaining_after_delay - future)
 
-    # 4) credit is the last resort, capped at safe repayment capacity.
-    #    Safe monthly repayment ~= 20% of expected monthly income; assume a
-    #    3-month responsible term, so max safe principal = 3 * that.
-    safe_repay_capacity = int(forecast["next_30_days"] * 0.20)
-    max_safe_credit = safe_repay_capacity * 3
+    # 4) credit is the last resort, capped at what's safely repayable out of
+    #    the worker's own already-conservative monthly discretionary surplus.
+    monthly_discretionary = resilience["safe_to_spend_daily"] * 30
+    safe_repay = max(0, int(monthly_discretionary * 0.20))  # 20% of already-safe surplus
+    repayment_months = 3
+    max_safe_credit = safe_repay * repayment_months
+
     credit = min(gap, max_safe_credit)
-    safe_repay = int(credit / 3) if credit > 0 else 0
+    safe_repay = int(credit / repayment_months) if credit > 0 else 0
     unfunded = gap - credit  # gap credit still cannot safely cover
 
     if requested <= savings + buffer_available:
@@ -41,7 +52,7 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
     elif gap <= 0:
         decision = "NO_CREDIT_NEEDED"          # delay + future income closed it
     elif credit <= 0:
-        decision = "CREDIT_DECLINED"           # nothing safe to lend
+        decision = "CREDIT_DECLINED"           # no safe discretionary surplus to lend against
     elif unfunded > 0:
         decision = "PARTIAL_CREDIT"            # safe credit helps but can't cover it all
     elif credit >= gap and credit >= requested - buffer_available:
@@ -50,11 +61,13 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
         decision = "PARTIAL_CREDIT"
 
     if decision == "CREDIT_DECLINED":
-        msg = ("Borrowing this amount isn't safe right now \u2014 repayment would strain "
-               "your income. Use your buffer and delay non-urgent expenses instead.")
+        msg = ("Borrowing this amount isn't safe right now \u2014 your safe discretionary "
+               "surplus can't cover repayment without cutting into essentials or your "
+               "buffer. Use your buffer and delay non-urgent expenses instead.")
     elif credit > 0:
         msg = (f"Use \u20b9{buffer_available} buffer + \u20b9{credit} responsible credit. "
-               f"Safe repayment \u20b9{safe_repay}/month over 3 months.")
+               f"Safe repayment \u20b9{safe_repay}/month over {repayment_months} months, "
+               f"capped by your safe discretionary surplus.")
     else:
         msg = "Your buffer and expected income cover this \u2014 no credit needed."
 
