@@ -1,0 +1,3 @@
+"use client";
+import { useScenario } from "./ScenarioProvider";
+export function Topbar() { const { data } = useScenario(); return <header className="flex h-[72px] items-center justify-between border-b border-[#e4ebe5] bg-white px-5 sm:px-8"><p className="text-sm font-semibold text-[#526158]">Financial resilience, made visible</p><div className="flex items-center gap-3"><div className="hidden text-right sm:block"><p className="text-sm font-bold">{data?.worker.name ?? "Ravi Kumar"}</p><p className="text-xs text-[#718078]">{data?.worker.occupation ?? "Gig worker"}</p></div><div className="grid h-9 w-9 place-items-center rounded-full bg-[#dff1e5] text-sm font-extrabold text-[#087344]">RK</div></div></header>; }
