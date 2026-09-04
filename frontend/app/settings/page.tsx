@@ -14,28 +14,28 @@ const SCENARIO_CARDS: {
   badge: string;
   badgeClass: string;
 }[] = [
-  {
-    value: "NORMAL",
-    label: "Normal",
-    description: "Shows real dashboard data for the current worker with no changes.",
-    badge: "Live",
-    badgeClass: "badge-green",
-  },
-  {
-    value: "SHOCK",
-    label: "Income Shock",
-    description: "Simulates a sudden income drop to see how the dashboard responds.",
-    badge: "Simulation",
-    badgeClass: "badge-red",
-  },
-  {
-    value: "RECOVERY",
-    label: "Recovery",
-    description: "Shows what recovery looks like after an income shock.",
-    badge: "Simulation",
-    badgeClass: "badge-blue",
-  },
-];
+    {
+      value: "NORMAL",
+      label: "Normal",
+      description: "Shows real dashboard data for the current worker with no changes.",
+      badge: "Live",
+      badgeClass: "badge-green",
+    },
+    {
+      value: "SHOCK",
+      label: "Income Shock",
+      description: "Simulates a sudden income drop to see how the dashboard responds.",
+      badge: "Simulation",
+      badgeClass: "badge-red",
+    },
+    {
+      value: "RECOVERY",
+      label: "Recovery",
+      description: "Shows what recovery looks like after an income shock.",
+      badge: "Simulation",
+      badgeClass: "badge-blue",
+    },
+  ];
 
 export default function SettingsPage() {
   const { scenario, setScenario, data, loading, refetch } = useScenario();
@@ -77,18 +77,16 @@ export default function SettingsPage() {
                   key={card.value}
                   onClick={() => setScenario(card.value)}
                   disabled={loading}
-                  className={`w-full rounded-xl border-2 p-4 text-left transition-all duration-150 disabled:opacity-50 ${
-                    active
-                      ? "border-[#087344] bg-[#f0faf4]"
-                      : "border-[#e5e7eb] bg-white hover:border-[#c3e6d3]"
-                  }`}
+                  className={`w-full rounded-xl border-2 p-4 text-left transition-all duration-150 disabled:opacity-50 ${active
+                    ? "border-[#087344] bg-[#f0faf4]"
+                    : "border-[#e5e7eb] bg-white hover:border-[#c3e6d3]"
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`grid h-4 w-4 place-items-center rounded-full border-2 ${
-                          active ? "border-[#087344] bg-[#087344]" : "border-[#d1d5db]"
-                        }`}
+                        className={`grid h-4 w-4 place-items-center rounded-full border-2 ${active ? "border-[#087344] bg-[#087344]" : "border-[#d1d5db]"
+                          }`}
                       >
                         {active && <CheckCircle2 size={10} className="text-white" />}
                       </div>
@@ -136,10 +134,10 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   {[
-                    { label: "Worker ID",       value: data.worker.worker_id },
+                    { label: "Worker ID", value: data.worker.worker_id },
                     { label: "Current balance", value: formatINR(data.worker.current_balance) },
-                    { label: "Health score",    value: `${data.resilience.resilience_score} / 100` },
-                    { label: "Risk level",      value: data.risk.risk_level },
+                    { label: "Health score", value: `${data.resilience.resilience_score} / 100` },
+                    { label: "Risk level", value: data.risk.risk_level },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between border-b border-[#f0f0f0] pb-2 last:border-0 text-sm">
                       <span className="text-[#6b7280]">{label}</span>
@@ -161,13 +159,12 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-2.5">
               <div
-                className={`h-2 w-2 rounded-full ${
-                  apiStatus === "ok"
-                    ? "bg-[#087344]"
-                    : apiStatus === "error"
+                className={`h-2 w-2 rounded-full ${apiStatus === "ok"
+                  ? "bg-[#087344]"
+                  : apiStatus === "error"
                     ? "bg-[#c0392b]"
                     : "bg-[#d97706] animate-pulse"
-                }`}
+                  }`}
               />
               <p className="text-sm font-semibold text-[#374151]">
                 {apiStatus === "ok" ? "Backend connected" : apiStatus === "error" ? "Backend unreachable" : "Checking…"}

@@ -8,8 +8,8 @@ import Link from "next/link";
 export default function LoginPage() {
   const [workerId, setWorkerId] = useState("W001");
   const [password, setPassword] = useState("password123");
-  const [error, setError]       = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {

@@ -21,7 +21,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: HeadersInit = { "Content-Type": "application/json" };
-  
+
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("flowguard_token");
     if (token) {
