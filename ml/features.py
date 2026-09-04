@@ -143,18 +143,17 @@ def _trend(values: list[float]) -> float:
     return max(-1.0, min(1.0, slope))
 
 
-def _payment_frequency_variance(history: list[Any] | None) -> float:
+def _payment_frequency_variance(credits: list[float]) -> float:
     """Bounded proxy for irregular payment frequency when timestamps are absent.
 
     Returns a value in [0, 2].  Falls back to 0.5 (mid-risk) when there is no
     history so that inference is conservative rather than falsely optimistic.
     """
-    if not history:
+    if not credits:
         return 0.5
-    credits, _ = split_transactions(history)
     # Length component: how far the number of transactions is from a "normal"
     # fortnightly window of ~6 transactions.
-    length_component = _safe(abs(len(history) - 6) / 6, 0.0)
+    length_component = _safe(abs(len(credits) - 6) / 6, 0.0)
     # Amount component: coefficient of variation of credit amounts.
     if len(credits) > 1:
         avg_c = _safe(mean(credits), 0.0)
@@ -193,10 +192,7 @@ def build_features(profile: Any, history: list[Any] | None = None) -> dict[str, 
     average_income = max(1.0, _safe(mean(income), 1.0))
 
     # --- Expenses ---------------------------------------------------------
-    if debits:
-        expenses = _safe(sum(debits), 0.0)
-    else:
-        expenses = _number(profile.get("total_monthly_expenses"))
+    expenses = _number(profile.get("total_monthly_expenses"))
 
     fixed_expenses = _number(profile.get("fixed_expenses", expenses))
     # fixed_expenses should never exceed total expenses.
@@ -221,7 +217,7 @@ def build_features(profile: Any, history: list[Any] | None = None) -> dict[str, 
         "income_gap_ratio":
             _safe(max(0.0, expenses - average_income) / average_income, 0.0),
         "payment_frequency_variance":
-            _payment_frequency_variance(history),
+            _payment_frequency_variance(credits),
         "essential_spend_ratio":
             _safe(fixed_expenses / max(1.0, expenses), _DEFAULTS["essential_spend_ratio"])
             if expenses > 0 else _DEFAULTS["essential_spend_ratio"],
