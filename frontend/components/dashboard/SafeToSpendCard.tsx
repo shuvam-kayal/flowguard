@@ -37,7 +37,7 @@ export function SafeToSpendCard({ resilience }: SafeToSpendCardProps) {
 
   return (
     <>
-    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#087344] to-[#065e36] p-6 text-white shadow-lg sm:p-8">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#087344] to-[#065e36] p-6 text-white shadow-lg sm:p-8">
         {/* Decorative circle */}
         <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/5" />
         <div className="pointer-events-none absolute -right-4 top-16 h-32 w-32 rounded-full bg-white/5" />
@@ -81,10 +81,9 @@ export function SafeToSpendCard({ resilience }: SafeToSpendCardProps) {
           </div>
         </div>
 
-
         <button
           onClick={() => setOpen(true)}
-          className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-[#d9f4e3] underline underline-offset-4 hover:text-white transition-colors"
+          className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-[#d9f4e3] underline underline-offset-4 hover:text-white transition-colors"
         >
           <CircleHelp size={14} />
           How is this calculated?
