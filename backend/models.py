@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.database import Base
 
@@ -6,10 +6,8 @@ class User(Base):
     __tablename__ = "users"
 
     worker_id = Column(String, primary_key=True, index=True)
-    email = Column(String, unique=True, nullable=True, index=True)
-    phone = Column(String, unique=True, nullable=True, index=True)
-    name = Column(String, nullable=False, default="")
-    occupation = Column(String, nullable=False, default="")
+    name = Column(String, nullable=False)
+    occupation = Column(String, nullable=False)
     current_balance = Column(Integer, default=0)
     monthly_income_avg = Column(Integer, default=0)
     monthly_income_std = Column(Integer, default=0)
@@ -25,7 +23,6 @@ class User(Base):
     avg_work_hours_per_week = Column(Integer, default=0)
     active_platforms = Column(JSON, default=list)
     expense_to_income_ratio = Column(Float, default=0.0)
-    hashed_password = Column(String, nullable=False, default="")
 
     obligations = relationship("Obligation", back_populates="user")
     recommendations = relationship("Recommendation", back_populates="user")
@@ -38,9 +35,6 @@ class Transaction(Base):
     amount = Column(Integer)
     date = Column(String)
     type = Column(String)
-    category = Column(String, nullable=True)
-    description = Column(String, nullable=True)
-    source = Column(String, nullable=True)
 
 
 class IncomeRecord(Base):
