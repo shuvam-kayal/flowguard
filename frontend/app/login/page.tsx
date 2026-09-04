@@ -6,7 +6,7 @@ import { apiLogin } from "@/lib/api";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const [workerId, setWorkerId] = useState("W001");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("password123");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const data = await apiLogin(workerId, password);
+      const data = await apiLogin(phone, password);
       localStorage.setItem("flowguard_token", data.access_token);
       router.push("/dashboard");
     } catch (err: any) {
@@ -60,12 +60,13 @@ export default function LoginPage() {
           
           <div>
             <label className="mb-2 block text-sm font-bold text-[#16231a]">
-              Worker ID
+              Phone number
             </label>
             <input
               type="text"
-              value={workerId}
-              onChange={(e) => setWorkerId(e.target.value)}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="e.g. 9876543210"
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               required
             />

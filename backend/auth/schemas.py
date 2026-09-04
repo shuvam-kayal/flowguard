@@ -5,6 +5,7 @@ class Token(BaseModel):
     token_type: str
     worker_id: str | None = None
     profile_complete: bool = False
+    name: str | None = None
 
 class TokenData(BaseModel):
     worker_id: str = None
@@ -16,4 +17,6 @@ class LoginRequest(BaseModel):
 class SignupRequest(BaseModel):
     email: str
     phone: str
+    name: str = ""
+    occupation: str = ""
     password: str

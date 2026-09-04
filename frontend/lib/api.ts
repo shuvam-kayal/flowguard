@@ -40,25 +40,42 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-/** POST /api/auth/login — authenticates a worker and returns a JWT token */
-export async function apiLogin(workerId: string, password: string): Promise<{ access_token: string; token_type: string }> {
-  return apiFetch<{ access_token: string; token_type: string }>("/api/auth/login", {
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  worker_id?: string;
+  name?: string;
+  profile_complete?: boolean;
+}
+
+/** POST /api/auth/login — authenticates a worker by phone */
+export async function apiLogin(phone: string, password: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ worker_id: workerId, password }),
+    body: JSON.stringify({ phone, password }),
   });
 }
 
 /** POST /api/auth/signup — registers a new worker and returns a JWT token */
-export async function apiSignup(workerId: string, name: string, occupation: string, password: string): Promise<{ access_token: string; token_type: string }> {
-  return apiFetch<{ access_token: string; token_type: string }>("/api/auth/signup", {
+export async function apiSignup(email: string, phone: string, name: string, occupation: string, password: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/api/auth/signup", {
     method: "POST",
-    body: JSON.stringify({ worker_id: workerId, name, occupation, password }),
+    body: JSON.stringify({ email, phone, name, occupation, password }),
   });
 }
 
 /** GET /api/auth/me — gets the current logged in user */
-export async function apiMe(): Promise<{ worker_id: string; name: string; occupation: string }> {
-  return apiFetch<{ worker_id: string; name: string; occupation: string }>("/api/auth/me");
+export interface UserProfile {
+  worker_id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  occupation: string;
+  profile_complete?: boolean;
+}
+
+export async function apiMe(): Promise<UserProfile> {
+  return apiFetch<UserProfile>("/api/auth/me");
 }
 
 /**

@@ -6,23 +6,29 @@ import { apiSignup } from "@/lib/api";
 import Link from "next/link";
 
 export default function SignupPage() {
-  const [workerId, setWorkerId] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [occupation, setOccupation] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
     try {
-      const data = await apiSignup(workerId, name, occupation, password);
+      const data = await apiSignup(email, phone, name, occupation, password);
       localStorage.setItem("flowguard_token", data.access_token);
-      router.push("/dashboard");
+      router.push("/profile");
     } catch (err: any) {
       setError(err.message || "Failed to sign up. Try again.");
     } finally {
@@ -62,20 +68,6 @@ export default function SignupPage() {
           
           <div>
             <label className="mb-1 block text-sm font-bold text-[#16231a]">
-              Worker ID
-            </label>
-            <input
-              type="text"
-              value={workerId}
-              onChange={(e) => setWorkerId(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              placeholder="e.g. W123"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-bold text-[#16231a]">
               Full Name
             </label>
             <input
@@ -86,6 +78,20 @@ export default function SignupPage() {
               placeholder="e.g. Rahul Kumar"
               required
             />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="you@example.com" required />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">Phone number</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="e.g. 9876543210" required />
           </div>
 
           <div>
@@ -100,6 +106,13 @@ export default function SignupPage() {
               placeholder="e.g. Delivery Partner"
               required
             />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">Confirm password</label>
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              required />
           </div>
 
           <div>

@@ -50,7 +50,8 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
     scenario = generate_worker_scenario()
     ratio = round(scenario["total"] / scenario["income"], 2)
     new_user = User(
-        worker_id=worker_id, email=request.email, phone=request.phone, name="", occupation="",
+        worker_id=worker_id, email=request.email, phone=request.phone,
+        name=request.name.strip(), occupation=request.occupation.strip(),
         hashed_password=get_password_hash(request.password),
         current_balance=scenario["balance"], monthly_income_avg=scenario["income"], monthly_income_std=scenario["std"],
         income_trend=scenario["trend"], total_monthly_expenses=scenario["total"], fixed_expenses=scenario["fixed"],
@@ -75,7 +76,8 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
     access_token = create_access_token(
         data={"sub": new_user.worker_id}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer", "worker_id": worker_id, "profile_complete": False}
+    return {"access_token": access_token, "token_type": "bearer", "worker_id": worker_id,
+            "name": new_user.name, "profile_complete": bool(new_user.name and new_user.occupation)}
 
 
 @router.get("/me")

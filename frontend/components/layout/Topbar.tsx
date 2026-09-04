@@ -1,6 +1,7 @@
 "use client";
 
 import { useScenario } from "./ScenarioProvider";
+import Link from "next/link";
 
 function getInitials(name: string): string {
   return name
@@ -43,16 +44,15 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Worker info */}
-        <div className={`hidden text-right sm:block transition-opacity duration-300 ${loading ? "opacity-50" : ""}`}>
-          <p className="text-sm font-bold leading-tight">{workerName}</p>
-          <p className="text-xs text-[#718078] leading-tight">{workerOccupation}</p>
-        </div>
-
-        {/* Avatar */}
-        <div className="grid h-9 w-9 place-items-center rounded-full bg-[#dff1e5] text-sm font-extrabold text-[#087344] ring-2 ring-[#b9e6c8] select-none">
-          {initials}
-        </div>
+        <Link href="/profile" className={`flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-gray-50 ${loading ? "opacity-50" : ""}`} aria-label="Open profile">
+          <div className="hidden text-right sm:block">
+            <p className="text-sm font-bold leading-tight">{workerName}</p>
+            <p className="text-xs text-[#718078] leading-tight">{workerOccupation}</p>
+          </div>
+          <div className="grid h-9 w-9 place-items-center rounded-full bg-[#dff1e5] text-sm font-extrabold text-[#087344] ring-2 ring-[#b9e6c8] select-none">
+            {initials}
+          </div>
+        </Link>
 
         {/* Logout (Mobile + Desktop fallback) */}
         <button
