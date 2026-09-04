@@ -71,11 +71,36 @@ export interface UserProfile {
   email: string | null;
   phone: string | null;
   occupation: string;
+  current_balance: number;
+  monthly_income_avg: number;
+  monthly_income_std: number;
+  income_trend: "RISING" | "STABLE" | "DECLINING";
+  total_monthly_expenses: number;
+  fixed_expenses: number;
+  variable_expenses: number;
+  savings_balance: number;
+  emergency_buffer: number;
+  total_debt: number;
+  monthly_emi: number;
+  dependents: number;
+  avg_work_hours_per_week: number;
+  active_platforms: string[];
+  expense_to_income_ratio: number;
   profile_complete?: boolean;
 }
 
+export type ProfileUpdate = Pick<UserProfile, "name" | "occupation" | "monthly_income_avg" | "fixed_expenses" | "variable_expenses" | "total_debt" | "monthly_emi" | "savings_balance" | "emergency_buffer" | "dependents" | "avg_work_hours_per_week" | "active_platforms">;
+
 export async function apiMe(): Promise<UserProfile> {
   return apiFetch<UserProfile>("/api/auth/me");
+}
+
+/** PATCH /api/auth/me — updates user-editable profile fields and recomputes intelligence */
+export async function apiUpdateProfile(updates: Partial<ProfileUpdate>): Promise<UserProfile> {
+  return apiFetch<UserProfile>("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
 }
 
 /**

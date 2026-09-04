@@ -20,7 +20,7 @@ export default function LoginPage() {
     try {
       const data = await apiLogin(phone, password);
       localStorage.setItem("flowguard_token", data.access_token);
-      router.push("/dashboard");
+      router.push("/profile");
     } catch (err: any) {
       setError(err.message || "Failed to login. Check your credentials.");
     } finally {

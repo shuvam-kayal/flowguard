@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import User
-from backend.auth.schemas import Token, LoginRequest, SignupRequest
+from backend.auth.schemas import Token, LoginRequest, SignupRequest, ProfileUpdateRequest
 from backend.auth.security import verify_password, get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from backend.auth.dependencies import get_current_user
 from backend.services.mock_data import (generate_worker_scenario, generate_income_records,
@@ -33,7 +33,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         data={"sub": user.worker_id}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer", "worker_id": user.worker_id,
-            "profile_complete": bool(user.name and user.occupation)}
+            "name": user.name, "profile_complete": bool(user.name and user.occupation)}
 
 
 @router.post("/signup", response_model=Token)
@@ -86,11 +86,30 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
 
 @router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
-    return {
-        "worker_id": current_user.worker_id,
-        "name": current_user.name,
-        "occupation": current_user.occupation,
-        "email": current_user.email,
-        "phone": current_user.phone,
-        "profile_complete": bool(current_user.name and current_user.occupation)
-    }
+    return _profile_response(current_user)
+
+
+def _profile_response(user: User) -> dict:
+    return {column.name: getattr(user, column.name) for column in user.__table__.columns
+            if column.name != "hashed_password"} | {
+                "profile_complete": bool(user.name and user.occupation)
+            }
+
+
+@router.patch("/me")
+def update_profile(request: ProfileUpdateRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    for field, value in request.model_dump(exclude_unset=True).items():
+        setattr(current_user, field, value)
+    current_user.total_monthly_expenses = current_user.fixed_expenses + current_user.variable_expenses
+    current_user.expense_to_income_ratio = round(
+        current_user.total_monthly_expenses / current_user.monthly_income_avg, 2
+    ) if current_user.monthly_income_avg > 0 else 0.0
+    try:
+        db.flush()
+        recompute_worker(current_user.worker_id, db)
+        db.commit()
+        db.refresh(current_user)
+    except Exception:
+        db.rollback()
+        raise HTTPException(500, "Could not update profile")
+    return _profile_response(current_user)
