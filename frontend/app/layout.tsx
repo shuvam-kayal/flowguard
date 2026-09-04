@@ -3,6 +3,14 @@ import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { ScenarioProvider } from "@/components/layout/ScenarioProvider";
 import { QueryProvider } from "@/components/layout/QueryProvider";
+import { Inter } from "next/font/google";
+import { AuthProvider } from "@/components/layout/AuthProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "FlowGuard — Financial Resilience for Gig Workers",
@@ -18,9 +26,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <QueryProvider>
-          <ScenarioProvider>
-            <AppShell>{children}</AppShell>
-          </ScenarioProvider>
+          <AuthProvider>
+            <ScenarioProvider>
+              <AppShell>{children}</AppShell>
+            </ScenarioProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

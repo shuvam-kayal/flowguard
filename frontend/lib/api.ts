@@ -20,8 +20,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("flowguard_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...init,
   });
   if (!res.ok) {
@@ -29,6 +38,69 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
   return res.json() as Promise<T>;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  worker_id?: string;
+  name?: string;
+  profile_complete?: boolean;
+}
+
+/** POST /api/auth/login — authenticates a worker by phone */
+export async function apiLogin(phone: string, password: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ phone, password }),
+  });
+}
+
+/** POST /api/auth/signup — registers a new worker and returns a JWT token */
+export async function apiSignup(email: string, phone: string, name: string, occupation: string, password: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/api/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ email, phone, name, occupation, password }),
+  });
+}
+
+/** GET /api/auth/me — gets the current logged in user */
+export interface UserProfile {
+  worker_id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  occupation: string;
+  current_balance: number;
+  monthly_income_avg: number;
+  monthly_income_std: number;
+  income_trend: "RISING" | "STABLE" | "DECLINING";
+  total_monthly_expenses: number;
+  fixed_expenses: number;
+  variable_expenses: number;
+  savings_balance: number;
+  emergency_buffer: number;
+  total_debt: number;
+  monthly_emi: number;
+  dependents: number;
+  avg_work_hours_per_week: number;
+  active_platforms: string[];
+  expense_to_income_ratio: number;
+  profile_complete?: boolean;
+}
+
+export type ProfileUpdate = Pick<UserProfile, "name" | "occupation" | "monthly_income_avg" | "fixed_expenses" | "variable_expenses" | "total_debt" | "monthly_emi" | "savings_balance" | "emergency_buffer" | "dependents" | "avg_work_hours_per_week" | "active_platforms">;
+
+export async function apiMe(): Promise<UserProfile> {
+  return apiFetch<UserProfile>("/api/auth/me");
+}
+
+/** PATCH /api/auth/me — updates user-editable profile fields and recomputes intelligence */
+export async function apiUpdateProfile(updates: Partial<ProfileUpdate>): Promise<UserProfile> {
+  return apiFetch<UserProfile>("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
 }
 
 /**
