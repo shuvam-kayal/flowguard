@@ -12,6 +12,7 @@ from backend.models import (
     ResilienceResultModel, Recommendation
 )
 from backend.schemas.contracts import FinancialProfile
+from backend.auth.security import get_password_hash
 
 def load_json(filename):
     path = os.path.join(ROOT, "data", "demo", filename)
@@ -34,13 +35,15 @@ def seed():
     print("Loading dashboards (for pre-computed risk/forecast/resilience)...")
     dashboards_data = load_json("sample_dashboards.json")
 
+    default_password_hash = get_password_hash("password123")
+
     for p_data in personas_data:
         worker_id = p_data["worker_id"]
         
         # 1. Create User
         # Filter p_data to match FinancialProfile / User model
         profile_data = {k: v for k, v in p_data.items() if hasattr(User, k)}
-        user = User(**profile_data)
+        user = User(**profile_data, hashed_password=default_password_hash)
         db.add(user)
 
         # 2. Create Obligations

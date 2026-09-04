@@ -53,6 +53,20 @@ export function Topbar() {
         <div className="grid h-9 w-9 place-items-center rounded-full bg-[#dff1e5] text-sm font-extrabold text-[#087344] ring-2 ring-[#b9e6c8] select-none">
           {initials}
         </div>
+
+        {/* Logout (Mobile + Desktop fallback) */}
+        <button
+          onClick={() => {
+            localStorage.removeItem("flowguard_token");
+            window.location.href = "/login";
+          }}
+          className="ml-2 grid h-9 w-9 place-items-center rounded-xl bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors lg:hidden"
+          title="Log out"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </div>
     </header>
   );

@@ -28,6 +28,8 @@ from backend.models import (
     User, Obligation, RiskResultModel, ForecastResultModel, 
     ResilienceResultModel, Recommendation as RecommendationModel
 )
+from backend.auth.router import router as auth_router
+from backend.auth.dependencies import get_current_user
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,6 +40,8 @@ app.add_middleware(
     allow_origins=_origins or ["*"],
     allow_methods=["*"], allow_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 
 # ---- toggle: use mocks or real modules -------------------------------------
 # Set to False to read pre-computed risk/resilience from the DB. 
@@ -127,24 +131,26 @@ def list_workers(db: Session = Depends(get_db)):
 
 
 @app.get("/worker/{worker_id}/dashboard")
-def worker_dashboard(worker_id: str, db: Session = Depends(get_db)) -> DashboardResponse:
+def worker_dashboard(worker_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> DashboardResponse:
+    if current_user.worker_id != worker_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this dashboard")
     return get_dashboard(worker_id, db)
 
 
 @app.post("/ml/risk")
-def risk_endpoint(payload: dict):
+def risk_endpoint(payload: dict, current_user: User = Depends(get_current_user)):
     from ml.predict import predict_risk
     return predict_risk(FinancialProfile.model_validate(payload.get("profile", payload)), payload.get("history"))
 
 
 @app.post("/forecast/income")
-def forecast_endpoint(payload: dict):
+def forecast_endpoint(payload: dict, current_user: User = Depends(get_current_user)):
     from forecast.predict import forecast_income
     return forecast_income(FinancialProfile.model_validate(payload.get("profile", payload)), payload.get("history"))
 
 
 @app.post("/resilience/evaluate")
-def resilience_endpoint(payload: dict):
+def resilience_endpoint(payload: dict, current_user: User = Depends(get_current_user)):
     from resilience.engine import evaluate, recommend
     profile = FinancialProfile.model_validate(payload["profile"])
     risk = RiskResult.model_validate(payload["risk"])
@@ -155,8 +161,10 @@ def resilience_endpoint(payload: dict):
 
 
 @app.post("/credit/evaluate")
-def credit_evaluate(payload: dict, db: Session = Depends(get_db)):
+def credit_evaluate(payload: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wid = payload.get("worker_id", "W001")
+    if current_user.worker_id != wid:
+        raise HTTPException(status_code=403, detail="Not authorized")
     dashboard = get_dashboard(wid, db)
     from resilience.credit_guard import evaluate_credit
     
@@ -221,13 +229,17 @@ def _apply_recovery(dash: DashboardResponse) -> DashboardResponse:
 
 
 @app.post("/simulate/shock")
-def simulate_shock(payload: dict, db: Session = Depends(get_db)):
+def simulate_shock(payload: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wid = payload.get("worker_id", "W001")
+    if current_user.worker_id != wid:
+        raise HTTPException(status_code=403, detail="Not authorized")
     factor = payload.get("factor", SHOCK_DEFAULT_FACTOR)
     return _apply_shock(get_dashboard(wid, db), factor)
 
 
 @app.post("/simulate/recovery")
-def simulate_recovery(payload: dict, db: Session = Depends(get_db)):
+def simulate_recovery(payload: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wid = payload.get("worker_id", "W001")
+    if current_user.worker_id != wid:
+        raise HTTPException(status_code=403, detail="Not authorized")
     return _apply_recovery(get_dashboard(wid, db))

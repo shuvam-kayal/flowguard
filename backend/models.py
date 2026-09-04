@@ -23,6 +23,7 @@ class User(Base):
     avg_work_hours_per_week = Column(Integer, default=0)
     active_platforms = Column(JSON, default=list)
     expense_to_income_ratio = Column(Float, default=0.0)
+    hashed_password = Column(String, nullable=False, default="")
 
     obligations = relationship("Obligation", back_populates="user")
     recommendations = relationship("Recommendation", back_populates="user")

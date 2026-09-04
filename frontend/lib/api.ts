@@ -20,8 +20,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("flowguard_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...init,
   });
   if (!res.ok) {
@@ -29,6 +38,14 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
   return res.json() as Promise<T>;
+}
+
+/** POST /api/auth/login — authenticates a worker and returns a JWT token */
+export async function apiLogin(workerId: string, password: string): Promise<{ access_token: string; token_type: string }> {
+  return apiFetch<{ access_token: string; token_type: string }>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ worker_id: workerId, password }),
+  });
 }
 
 /**
