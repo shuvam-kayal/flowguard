@@ -15,8 +15,16 @@ from __future__ import annotations
 import json
 import math
 import warnings
+import sys
 from pathlib import Path
 from typing import Any
+
+# Ensure backend can be imported if run directly
+_REPO_ROOT = str(Path(__file__).resolve().parents[1])
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from backend.schemas.contracts import RiskResult
 
 try:
     import shap as _shap_lib  # noqa: N812
@@ -367,8 +375,8 @@ def _deterministic_factors(
 # Public inference entry point
 # ---------------------------------------------------------------------------
 
-def predict_risk(profile: Any, history: list[Any] | None = None) -> dict[str, Any]:
-    """Return a ``RiskResult``-compatible dict for *profile*.
+def predict_risk(profile: Any, history: list[Any] | None = None) -> RiskResult:
+    """Return a ``RiskResult`` model for *profile*.
 
     Flow
     ----
@@ -379,15 +387,11 @@ def predict_risk(profile: Any, history: list[Any] | None = None) -> dict[str, An
        c. Derive monotonic risk score from class probabilities.
        d. Attempt SHAP explanation; fall back to deterministic factors on failure.
     3. Any exception in steps 2a-2d causes graceful degradation to the fallback.
-
-    The returned dict always contains:
-      ``worker_id``, ``risk_score`` ∈ [0,1], ``risk_level`` ∈ {LOW,MODERATE,HIGH},
-      ``confidence`` ∈ [0,1], ``top_factors``, ``features``, ``source``.
     """
     fallback_result = _fallback(profile, history)
 
     if not MODEL_PATH.exists():
-        return fallback_result
+        return RiskResult.model_validate(fallback_result)
 
     try:
         import joblib  # noqa: PLC0415
@@ -402,7 +406,7 @@ def predict_risk(profile: Any, history: list[Any] | None = None) -> dict[str, An
                 + "\n".join(validation_errors),
                 stacklevel=2,
             )
-            return fallback_result
+            return RiskResult.model_validate(fallback_result)
 
         feature_names: list[str] = list(artifact["features"])
         model   = artifact["model"]
@@ -451,21 +455,21 @@ def predict_risk(profile: Any, history: list[Any] | None = None) -> dict[str, An
             top_factors = _deterministic_factors(features, feature_names)
             source = "random_forest_deterministic"
 
-        return {
+        return RiskResult.model_validate({
             **fallback_result,
             "risk_score":  score,
             "risk_level":  label,
             "confidence":  round(max(probabilities), 3),
             "top_factors": top_factors,
             "source":      source,
-        }
+        })
 
     except Exception as exc:  # noqa: BLE001
         warnings.warn(
             f"ML inference failed ({type(exc).__name__}: {exc}); using fallback.",
             stacklevel=2,
         )
-        return fallback_result
+        return RiskResult.model_validate(fallback_result)
 
 
 # ---------------------------------------------------------------------------
