@@ -111,7 +111,7 @@ def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
         profile = FinancialProfile(**profile_data)
 
         history = get_income_history(worker_id, db)
-        risk = predict_risk(profile)
+        risk = predict_risk(profile, history)
         forecast = forecast_income(profile, history)
         resilience = evaluate(profile, risk, forecast, obl_summary)
         recs = recommend(profile, resilience, forecast, obl_summary)
@@ -313,7 +313,11 @@ def credit_evaluate(payload: dict, db: Session = Depends(get_db), current_user: 
     if not user:
         raise HTTPException(404, f"Unknown worker {wid}")
     
-    profile_data = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+    profile_data = {
+        c.name: getattr(user, c.name)
+        for c in user.__table__.columns
+        if c.name not in {"email", "phone", "hashed_password"}
+    }
     profile = FinancialProfile(**profile_data)
     
     requested = max(0, int(payload.get("requested_amount", 0)))

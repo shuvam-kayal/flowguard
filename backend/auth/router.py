@@ -68,9 +68,13 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
         db.flush()
         recompute_worker(worker_id, db)
         db.commit()
-    except Exception:
+    except Exception as exc:
         db.rollback()
-        raise HTTPException(500, "Could not initialize financial data")
+        print(f"SIGNUP INITIALIZATION ERROR: {type(exc).__name__}: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not initialize financial data: {type(exc).__name__}: {exc}",
+        )
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

@@ -26,7 +26,8 @@ def recompute_worker(worker_id: str, db):
     db.query(Recommendation).filter_by(worker_id=worker_id).delete()
     db.add(RiskResultModel(worker_id=worker_id, **risk.model_dump(exclude={"worker_id"})))
     db.add(ForecastResultModel(worker_id=worker_id, **forecast.model_dump(exclude={"worker_id"})))
-    db.add(ResilienceResultModel(worker_id=worker_id, **resilience))
+    resilience_data = {key: value for key, value in resilience.items() if key != "worker_id"}
+    db.add(ResilienceResultModel(worker_id=worker_id, **resilience_data))
     for item in recommendations:
         db.add(Recommendation(worker_id=worker_id, **(item.model_dump() if hasattr(item, "model_dump") else item)))
     return risk, forecast, resilience, recommendations
