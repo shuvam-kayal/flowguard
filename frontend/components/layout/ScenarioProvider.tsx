@@ -3,7 +3,6 @@
 import { createContext, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardForScenario, apiMe } from "@/lib/api";
-import { DEFAULT_WORKER_ID } from "@/lib/constants";
 import type { DashboardResponse, Scenario } from "@/types/dashboard";
 
 // ─── Context Shape ────────────────────────────────────────────────────────────
@@ -33,7 +32,9 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
     retry: false, // If it fails, they are probably not logged in
   });
 
-  const workerId = user?.worker_id || DEFAULT_WORKER_ID;
+  // Never silently fall back to the shared demo worker. The dashboard must
+  // always be scoped to the identity returned by the authenticated API call.
+  const workerId = user?.worker_id ?? "";
 
   const {
     data = null,
@@ -44,7 +45,7 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
   } = useQuery({
     queryKey: ["dashboard", workerId, scenario],
     queryFn: () => getDashboardForScenario(workerId, scenario),
-    enabled: !!user, // Only fetch dashboard if we know who the user is
+    enabled: !!user?.worker_id, // Only fetch dashboard for an identified user
   });
 
   const error =
