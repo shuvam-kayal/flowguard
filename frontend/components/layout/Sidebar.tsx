@@ -3,114 +3,93 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
-  CreditCard,
   LayoutDashboard,
+  TrendingUp,
+  Shield,
+  Receipt,
+  CreditCard,
   Settings,
-  ShieldCheck,
-  WalletCards,
+  LogOut,
 } from "lucide-react";
-import { useScenario } from "./ScenarioProvider";
-import type { Scenario } from "@/types/dashboard";
 
 const links = [
-  { href: "/dashboard",     label: "Dashboard",         icon: LayoutDashboard },
-  { href: "/forecast",      label: "Financial Forecast", icon: BarChart3 },
-  { href: "/resilience",    label: "Resilience",         icon: ShieldCheck },
-  { href: "/transactions",  label: "Transactions",       icon: WalletCards },
-  { href: "/credit",        label: "Credit Guard",       icon: CreditCard },
-];
-
-const SCENARIO_OPTIONS: { value: Scenario; label: string; description: string }[] = [
-  { value: "NORMAL",   label: "Normal",        description: "Baseline income scenario" },
-  { value: "SHOCK",    label: "Income Shock",  description: "Simulated income dip" },
-  { value: "RECOVERY", label: "Recovery",      description: "Post-shock recovery" },
+  { href: "/dashboard",    label: "Overview",       sub: "Your daily summary",   icon: LayoutDashboard },
+  { href: "/forecast",     label: "Income Outlook", sub: "What you'll likely earn", icon: TrendingUp },
+  { href: "/resilience",   label: "Safety Net",     sub: "Your financial cushion",  icon: Shield },
+  { href: "/transactions", label: "Bills & Payments", sub: "What you owe",         icon: Receipt },
+  { href: "/credit",       label: "Borrow Safely",  sub: "Check before borrowing",  icon: CreditCard },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { scenario, setScenario, loading } = useScenario();
 
   return (
-    <aside className="hidden min-h-screen w-64 flex-col bg-[#0f3726] px-4 py-6 text-white lg:flex">
+    <aside className="hidden min-h-screen w-60 flex-shrink-0 flex-col bg-[#0f3726] lg:flex">
       {/* Logo */}
-      <Link
-        href="/dashboard"
-        className="mb-10 flex items-center gap-3 px-2 text-xl font-extrabold transition-opacity hover:opacity-90"
-      >
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#35bb7a] text-[#0f3726] text-lg font-black">
-          ↗
-        </span>
-        FlowGuard
-      </Link>
+      <div className="px-5 py-6">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
+        >
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#1a9459] text-white text-sm font-black">
+            F
+          </span>
+          <span className="text-lg font-bold text-white tracking-tight">FlowGuard</span>
+        </Link>
+      </div>
 
       {/* Nav */}
-      <nav className="space-y-0.5">
+      <nav className="flex-1 px-3 space-y-0.5">
+        <p className="px-2 py-2 text-[10px] font-semibold uppercase tracking-widest text-[#6b9e85]">
+          Menu
+        </p>
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
-              className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 active
                   ? "bg-white/10 text-white"
-                  : "text-[#b8d2c1] hover:bg-white/5 hover:text-white"
+                  : "text-[#a8c9b8] hover:bg-white/5 hover:text-white"
               }`}
             >
               {active && (
-                <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-[#35bb7a]" />
+                <span className="absolute left-3 h-4 w-0.5 rounded-r bg-[#35bb7a]" />
               )}
-              <Icon size={16} />
+              <Icon size={15} className="shrink-0" />
               {label}
             </Link>
           );
         })}
       </nav>
 
-      {/* Scenario selector */}
-      <div className="mt-auto border-t border-white/15 pt-5">
-        <p className="eyebrow px-2 !text-[#8ab8a1] mb-2">Demo scenario</p>
-        <div className="space-y-1">
-          {SCENARIO_OPTIONS.map(({ value, label, description }) => {
-            const active = scenario === value;
-            return (
-              <button
-                key={value}
-                onClick={() => setScenario(value)}
-                disabled={loading}
-                className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-all duration-150 ${
-                  active
-                    ? "bg-white/15 text-white font-bold"
-                    : "text-[#b8d2c1] hover:bg-white/5 hover:text-white"
-                } disabled:opacity-50`}
-              >
-                <p className={active ? "font-bold" : "font-medium"}>{label}</p>
-                <p className="text-[10px] text-[#7daa8f] mt-0.5">{description}</p>
-              </button>
-            );
-          })}
-        </div>
-
+      {/* Footer */}
+      <div className="px-3 py-4 border-t border-white/10 space-y-0.5">
+        <p className="px-2 py-2 text-[10px] font-semibold uppercase tracking-widest text-[#6b9e85]">
+          Account
+        </p>
         <Link
           href="/settings"
-          className="mt-4 flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-[#b8d2c1] hover:bg-white/5 hover:text-white transition-colors"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            pathname === "/settings"
+              ? "bg-white/10 text-white"
+              : "text-[#a8c9b8] hover:bg-white/5 hover:text-white"
+          }`}
         >
-          <Settings size={15} />
+          <Settings size={15} className="shrink-0" />
           Settings
         </Link>
-
         <button
           onClick={() => {
             localStorage.removeItem("flowguard_token");
             window.location.href = "/login";
           }}
-          className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b8d2c1] hover:bg-red-500/20 hover:text-red-400 transition-colors"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-[#a8c9b8] hover:bg-red-900/30 hover:text-red-400 transition-colors"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Log out
+          <LogOut size={15} className="shrink-0" />
+          Sign out
         </button>
       </div>
     </aside>

@@ -11,11 +11,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem("flowguard_token");
     
-    const isAuthPage = pathname === "/login" || pathname === "/signup";
+    const isPublicPage = pathname === "/" || pathname === "/login" || pathname === "/signup";
 
-    if (!token && !isAuthPage) {
+    if (!token && !isPublicPage) {
       router.replace("/login");
-    } else if (token && isAuthPage) {
+    } else if (token && (pathname === "/login" || pathname === "/signup")) {
       router.replace("/dashboard");
     } else {
       setIsChecking(false);

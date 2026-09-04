@@ -6,30 +6,40 @@ import { ResilienceSkeleton } from "@/components/ui/Skeleton";
 import { formatINR } from "@/lib/formatters";
 import type { ScoreBreakdown } from "@/types/dashboard";
 
-const SCORE_LABELS: Record<keyof ScoreBreakdown, string> = {
-  income_stability:    "Income stability",
-  emergency_buffer:    "Emergency buffer",
-  expense_coverage:    "Expense coverage",
-  debt_burden:         "Debt burden",
-  savings_consistency: "Savings consistency",
+const SCORE_PLAIN: Record<keyof ScoreBreakdown, { label: string; description: string }> = {
+  income_stability:    { label: "Income stability",    description: "How consistent your earnings have been" },
+  emergency_buffer:    { label: "Emergency savings",   description: "How much you have saved for tough times" },
+  expense_coverage:    { label: "Bill coverage",       description: "Whether your income covers all your bills" },
+  debt_burden:         { label: "Debt level",          description: "How manageable your loans and EMIs are" },
+  savings_consistency: { label: "Saving habits",       description: "How regularly you save money" },
 };
 
-const MODE_BANNER: Record<
-  string,
-  { bg: string; border: string; text: string; desc: string }
-> = {
-  NORMAL:   { bg: "bg-[#f1faf4]",  border: "border-[#b9dfc8]", text: "text-[#087344]", desc: "Your finances are on track." },
-  WATCH:    { bg: "bg-[#fff8ed]",  border: "border-[#f3cc8d]", text: "text-[#9a570a]", desc: "Keep an eye on expenses." },
-  SHOCK:    { bg: "bg-[#fff6f6]",  border: "border-[#efc5c5]", text: "text-[#b93a3a]", desc: "Income dip detected. Conserve cash." },
-  RECOVERY: { bg: "bg-[#eff5fe]",  border: "border-[#b6cef7]", text: "text-[#1a56db]", desc: "Income recovering. Rebuild gradually." },
+const MODE_PLAIN: Record<string, { label: string; description: string; bg: string; border: string; color: string }> = {
+  NORMAL:   { label: "Your finances are on track", description: "You're covering your bills and building a safety net. Keep going.", bg: "bg-[#f0faf4]", border: "border-[#c3e6d3]", color: "text-[#087344]" },
+  WATCH:    { label: "Keep an eye on spending", description: "Your expenses are rising. Try to reduce non-essential spending this week.", bg: "bg-[#fef9ec]", border: "border-[#f0d080]", color: "text-[#92580a]" },
+  SHOCK:    { label: "Income is low — be careful", description: "Your income has dropped significantly. Focus on essential expenses only.", bg: "bg-[#fef5f4]", border: "border-[#f5c6c2]", color: "text-[#c0392b]" },
+  RECOVERY: { label: "Things are getting better", description: "Your income is recovering. Slowly start rebuilding your savings.", bg: "bg-[#eef3fd]", border: "border-[#c3d4f7]", color: "text-[#1a56db]" },
 };
+
+function scoreColor(val: number) {
+  if (val >= 70) return "bg-[#087344]";
+  if (val >= 50) return "bg-[#d97706]";
+  return "bg-[#c0392b]";
+}
+
+function scoreWord(val: number) {
+  if (val >= 75) return "Strong";
+  if (val >= 55) return "Fair";
+  if (val >= 35) return "Weak";
+  return "Critical";
+}
 
 export default function ResiliencePage() {
   const { data, loading, error, refetch } = useScenario();
 
   if (loading) return <ResilienceSkeleton />;
   if (!data || error) {
-    return <ErrorState message={error ?? "No resilience data found."} onRetry={refetch} />;
+    return <ErrorState message={error ?? "Unable to load safety net data."} onRetry={refetch} />;
   }
 
   const { resilience } = data;
@@ -40,150 +50,130 @@ export default function ResiliencePage() {
     mode, wallet_allocation, score_breakdown,
   } = resilience;
 
-  const bufferPct   = Math.min(100, Math.round((buffer_current / buffer_target) * 100));
-  const bannerMeta  = MODE_BANNER[mode] ?? MODE_BANNER.NORMAL;
+  const bufferPct  = Math.min(100, Math.round((buffer_current / buffer_target) * 100));
+  const modeMeta   = MODE_PLAIN[mode] ?? MODE_PLAIN.NORMAL;
 
   const walletItems = [
-    { label: "Daily discretionary", value: wallet_allocation.daily,  color: "#087344" },
-    { label: "Bills & obligations",  value: wallet_allocation.bills,  color: "#b66b0b" },
-    { label: "Buffer top-up",        value: wallet_allocation.buffer, color: "#1a56db" },
-    { label: "Growth / savings",     value: wallet_allocation.growth, color: "#23aa6b" },
+    { label: "Daily spending",   value: wallet_allocation.daily,  color: "#087344", pct: 0 },
+    { label: "Bills & EMIs",     value: wallet_allocation.bills,  color: "#d97706", pct: 0 },
+    { label: "Savings top-up",   value: wallet_allocation.buffer, color: "#1a56db", pct: 0 },
+    { label: "Growth savings",   value: wallet_allocation.growth, color: "#6b7280", pct: 0 },
   ];
   const walletTotal = walletItems.reduce((s, i) => s + i.value, 0);
+  walletItems.forEach(i => { i.pct = walletTotal > 0 ? Math.round((i.value / walletTotal) * 100) : 0; });
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <p className="eyebrow">Resilience</p>
-      <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
-        Your financial shock absorber
-      </h1>
-      <p className="muted mt-2">
-        How long your current buffer can cover essential expenses.
-      </p>
-
-      {/* Mode banner */}
-      <div className={`mt-5 rounded-2xl border ${bannerMeta.bg} ${bannerMeta.border} px-5 py-4`}>
-        <div className="flex items-center gap-3">
-          <span className={`text-sm font-extrabold ${bannerMeta.text} uppercase tracking-wide`}>
-            {mode}
-          </span>
-          <span className="text-sm text-[#718078]">·</span>
-          <span className="text-sm text-[#526158]">{bannerMeta.desc}</span>
-        </div>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Header ── */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Your Safety Net</h1>
+        <p className="mt-1 text-sm text-[#6b7280]">
+          How well you're protected if your income slows down or stops.
+        </p>
       </div>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        {/* Score card */}
-        <section className="panel">
-          <div className="flex items-center gap-6">
-            {/* Score ring */}
-            <div
-              className="grid h-32 w-32 shrink-0 place-items-center rounded-full transition-all duration-700"
-              style={{
-                background: `conic-gradient(${
-                  resilience_score >= 70 ? "#23aa6b"
-                  : resilience_score >= 55 ? "#e8a838"
-                  : "#b93a3a"
-                } ${resilience_score}%, #edf2ee 0)`,
-              }}
-            >
-              <div className="grid h-[100px] w-[100px] place-items-center rounded-full bg-white text-3xl font-extrabold text-[#16231a]">
-                {resilience_score}
-              </div>
-            </div>
+      {/* ── Status banner ── */}
+      <div className={`rounded-xl border ${modeMeta.bg} ${modeMeta.border} px-5 py-4`}>
+        <p className={`text-sm font-bold ${modeMeta.color}`}>{modeMeta.label}</p>
+        <p className="mt-1 text-sm text-[#4b5563]">{modeMeta.description}</p>
+      </div>
+
+      {/* ── Score + Runway ── */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Health score */}
+        <section className="panel space-y-4">
+          <div className="flex items-start justify-between">
             <div>
-              <p className="eyebrow">Resilience score</p>
-              <h2 className="mt-1 text-xl font-extrabold">{resilience_days} days of runway</h2>
-              <p className="muted mt-1">
-                Essential expenses covered for approx. this long.
+              <p className="eyebrow">Financial health score</p>
+              <p className="mt-1 text-3xl font-bold text-[#111827]">
+                {resilience_score} <span className="text-base font-normal text-[#9ca3af]">/ 100</span>
               </p>
-              <p className="mt-2 text-sm">
-                Safe to spend:{" "}
-                <strong className="text-[#087344]">{formatINR(safe_to_spend_daily)}/day</strong>
+              <p className="mt-0.5 text-sm text-[#6b7280]">
+                {scoreWord(resilience_score)} — {resilience_days} days of runway
               </p>
             </div>
           </div>
 
-          {/* Score breakdown bars */}
-          <div className="mt-7 space-y-3">
-            {(Object.entries(score_breakdown) as [keyof ScoreBreakdown, number][]).map(
-              ([key, val]) => (
+          {/* Overall bar */}
+          <div>
+            <div className="progress-track">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${scoreColor(resilience_score)}`}
+                style={{ width: `${resilience_score}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Detailed breakdown */}
+          <div className="space-y-3 pt-2">
+            {(Object.entries(score_breakdown) as [keyof ScoreBreakdown, number][]).map(([key, val]) => {
+              const plain = SCORE_PLAIN[key];
+              return (
                 <div key={key}>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#526158]">{SCORE_LABELS[key]}</span>
-                    <strong className="text-[#16231a]">{val}</strong>
+                  <div className="flex items-center justify-between mb-1">
+                    <div>
+                      <span className="text-sm text-[#374151]">{plain.label}</span>
+                    </div>
+                    <span className={`text-xs font-semibold ${val >= 70 ? "text-[#087344]" : val >= 50 ? "text-[#92580a]" : "text-[#c0392b]"}`}>
+                      {scoreWord(val)}
+                    </span>
                   </div>
-                  <div className="progress-track mt-1">
+                  <div className="progress-track-sm">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ${
-                        val >= 70 ? "bg-[#23aa6b]"
-                        : val >= 50 ? "bg-[#e8a838]"
-                        : "bg-[#b93a3a]"
-                      }`}
+                      className={`h-full rounded-full transition-all duration-700 ${scoreColor(val)}`}
                       style={{ width: `${val}%` }}
                     />
                   </div>
+                  <p className="mt-0.5 text-[10px] text-[#9ca3af]">{plain.description}</p>
                 </div>
-              )
-            )}
+              );
+            })}
           </div>
         </section>
 
-        {/* Buffer + Wallet allocation */}
-        <div className="flex flex-col gap-5">
-          <section className="panel">
-            <p className="eyebrow">Emergency buffer</p>
-            <div className="mt-2 flex items-end justify-between">
-              <h2 className="text-2xl font-extrabold">
-                {formatINR(buffer_current)}{" "}
-                <span className="text-base font-normal text-[#718078]">
-                  / {formatINR(buffer_target)}
-                </span>
-              </h2>
-              <span className="text-sm font-bold text-[#087344]">{bufferPct}%</span>
+        {/* Buffer + Wallet */}
+        <div className="space-y-4">
+          {/* Emergency savings */}
+          <section className="panel space-y-3">
+            <p className="eyebrow">Emergency savings</p>
+            <div className="flex items-baseline justify-between">
+              <p className="text-2xl font-bold text-[#111827]">{formatINR(buffer_current)}</p>
+              <p className="text-sm text-[#9ca3af]">goal: {formatINR(buffer_target)}</p>
             </div>
-            <div className="progress-track mt-3">
+            <div className="progress-track">
               <div className="progress-fill-green" style={{ width: `${bufferPct}%` }} />
             </div>
-            <p className="muted mt-3">{bufferPct}% of your target emergency buffer.</p>
-
-            <div className="mt-5 rounded-xl bg-[#f1faf4] border border-[#c9e8d4] p-4">
-              <p className="text-xs font-bold text-[#087344]">Recommended this week</p>
-              <p className="mt-1 text-sm">
-                Save{" "}
-                <strong className="text-[#087344]">{formatINR(recommended_save)}</strong>{" "}
-                to accelerate buffer recovery.
+            <p className="text-sm text-[#6b7280]">
+              You've reached <strong className="text-[#111827]">{bufferPct}%</strong> of your safety goal.
+            </p>
+            <div className="rounded-lg bg-[#f0faf4] border border-[#c3e6d3] px-4 py-3">
+              <p className="text-xs font-semibold text-[#087344]">Suggested this week</p>
+              <p className="mt-1 text-sm text-[#374151]">
+                Try to save <strong>{formatINR(recommended_save)}</strong> to reach your goal faster.
               </p>
             </div>
           </section>
 
-          {/* Wallet allocation */}
-          <section className="panel">
-            <p className="eyebrow">Wallet allocation</p>
-            <p className="muted mt-1">How your income is distributed each month</p>
-            <div className="mt-5 space-y-3">
-              {walletItems.map(({ label, value, color }) => {
-                const pct = walletTotal > 0 ? Math.round((value / walletTotal) * 100) : 0;
-                return (
-                  <div key={label}>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[#526158]">{label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#718078]">{pct}%</span>
-                        <strong style={{ color }}>{formatINR(value)}</strong>
-                      </div>
-                    </div>
-                    <div className="progress-track mt-1">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, background: color }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+          {/* How your money is split */}
+          <section className="panel space-y-3">
+            <div>
+              <p className="eyebrow">How your income is split</p>
+              <p className="mt-1 text-xs text-[#9ca3af]">Out of {formatINR(walletTotal)} monthly income</p>
             </div>
+            {walletItems.map(({ label, value, color, pct }) => (
+              <div key={label}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-[#374151]">{label}</span>
+                  <span className="text-sm font-semibold text-[#111827]">{formatINR(value)}</span>
+                </div>
+                <div className="progress-track-sm">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%`, background: color }}
+                  />
+                </div>
+              </div>
+            ))}
           </section>
         </div>
       </div>

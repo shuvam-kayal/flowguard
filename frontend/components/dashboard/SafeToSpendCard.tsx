@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { CircleHelp, X } from "lucide-react";
+import { useState } from "react";
 import { formatINR } from "@/lib/formatters";
 import type { ResilienceResult } from "@/types/dashboard";
 
@@ -9,130 +9,115 @@ interface SafeToSpendCardProps {
   resilience: ResilienceResult;
 }
 
-function WalletRow({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: number;
-  highlight?: boolean;
-}) {
-  return (
-    <div
-      className={`flex justify-between text-sm ${
-        highlight ? "font-extrabold text-[#087344]" : "text-[#526158]"
-      }`}
-    >
-      <span>{label}</span>
-      <span>{formatINR(value)}</span>
-    </div>
-  );
-}
-
 export function SafeToSpendCard({ resilience }: SafeToSpendCardProps) {
   const [open, setOpen] = useState(false);
-  const { safe_to_spend_daily, buffer_current, buffer_target, wallet_allocation } = resilience;
+  const { safe_to_spend_daily, buffer_current, buffer_target } = resilience;
   const bufferPct = Math.min(100, Math.round((buffer_current / buffer_target) * 100));
+
+  const healthLabel =
+    safe_to_spend_daily > 800 ? "Looking healthy"
+    : safe_to_spend_daily > 300 ? "Spend carefully"
+    : "Be very careful";
+
+  const healthColor =
+    safe_to_spend_daily > 800 ? "text-[#d0f0e0]"
+    : safe_to_spend_daily > 300 ? "text-[#fde68a]"
+    : "text-[#fca5a5]";
 
   return (
     <>
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#087344] to-[#065e36] p-6 text-white shadow-lg sm:p-8">
-        {/* Decorative circle */}
-        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/5" />
-        <div className="pointer-events-none absolute -right-4 top-16 h-32 w-32 rounded-full bg-white/5" />
+      <section className="rounded-xl bg-[#0f3726] p-6 text-white sm:p-7">
+        {/* Label */}
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7daa8f]">
+          Safe to spend today
+        </p>
 
-        <p className="eyebrow !text-[#b9e6c8]">Safe to spend today</p>
-        <p className="mt-5 text-5xl font-extrabold tracking-[-0.07em] sm:text-6xl">
+        {/* Big number */}
+        <p className="mt-3 text-5xl font-bold tracking-tight sm:text-6xl">
           {formatINR(safe_to_spend_daily)}
         </p>
-        <p className="mt-2 text-sm text-[#d9f4e3]">
-          Recommended daily discretionary spending
-        </p>
+        <p className="mt-1 text-sm text-[#a8c9b8]">per day, after all your bills are covered</p>
 
-        {/* Wallet allocation pills */}
-        <div className="mt-6 flex flex-wrap gap-2">
-          {[
-            { label: "Daily", val: wallet_allocation.daily },
-            { label: "Bills",  val: wallet_allocation.bills },
-            { label: "Buffer", val: wallet_allocation.buffer },
-            { label: "Growth", val: wallet_allocation.growth },
-          ].map(({ label, val }) => (
-            <span
-              key={label}
-              className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white"
-            >
-              {label}: {formatINR(val)}
-            </span>
-          ))}
-        </div>
+        {/* Status */}
+        <span className={`mt-4 inline-block text-sm font-semibold ${healthColor}`}>
+          {healthLabel}
+        </span>
 
         {/* Buffer bar */}
         <div className="mt-6">
-          <div className="mb-1 flex justify-between text-xs text-[#d9f4e3]">
-            <span>Emergency buffer</span>
-            <span>{bufferPct}%</span>
+          <div className="mb-1.5 flex items-center justify-between text-xs">
+            <span className="text-[#7daa8f]">Emergency savings</span>
+            <span className="font-semibold text-white">{bufferPct}% of goal</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
             <div
               className="h-full rounded-full bg-[#35bb7a] transition-all duration-700"
               style={{ width: `${bufferPct}%` }}
             />
           </div>
+          <p className="mt-1 text-[11px] text-[#7daa8f]">
+            {formatINR(buffer_current)} saved · goal is {formatINR(buffer_target)}
+          </p>
         </div>
 
+        {/* How is this calculated? */}
         <button
           onClick={() => setOpen(true)}
-          className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-[#d9f4e3] underline underline-offset-4 hover:text-white transition-colors"
+          className="mt-5 inline-flex items-center gap-1.5 text-xs text-[#7daa8f] hover:text-white transition-colors"
         >
-          <CircleHelp size={14} />
+          <CircleHelp size={13} />
           How is this calculated?
         </button>
       </section>
 
+      {/* Modal */}
       {open && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-30 grid place-items-center bg-[#102017]/50 p-4 animate-fade-in"
+          className="fixed inset-0 z-30 grid place-items-center bg-black/40 p-4 animate-fade-in"
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-slide-up"
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-extrabold">Wallet allocation plan</h2>
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-base font-bold text-[#111827]">How we calculate this</h2>
+                <p className="mt-1 text-sm text-[#6b7280]">
+                  Your safe-to-spend amount is personalised to your situation.
+                </p>
+              </div>
               <button
                 aria-label="Close"
                 onClick={() => setOpen(false)}
-                className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f6f8f5] transition-colors"
+                className="grid h-8 w-8 place-items-center rounded-lg hover:bg-[#f3f4f6] transition-colors text-[#6b7280]"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="mt-5 space-y-3">
-              <WalletRow label="Daily discretionary" value={wallet_allocation.daily} highlight />
-              <WalletRow label="Bills & obligations"  value={wallet_allocation.bills} />
-              <WalletRow label="Emergency buffer top-up" value={wallet_allocation.buffer} />
-              <WalletRow label="Growth / savings"     value={wallet_allocation.growth} />
-              <div className="border-t border-[#edf1ee] pt-3">
-                <WalletRow
-                  label="Buffer progress"
-                  value={buffer_current}
-                />
-                <p className="muted mt-1 text-xs">
-                  Target: {formatINR(buffer_target)} · {bufferPct}% achieved
-                </p>
-              </div>
+            <div className="mt-5 space-y-3 text-sm">
+              {[
+                { step: "1", text: "We look at how much income you're likely to earn this week." },
+                { step: "2", text: "We subtract your upcoming bills and EMIs." },
+                { step: "3", text: "We keep some aside to grow your emergency savings." },
+                { step: "4", text: "Whatever is left is spread across your remaining days." },
+              ].map(({ step, text }) => (
+                <div key={step} className="flex gap-3">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#e8f5ee] text-[10px] font-bold text-[#087344]">
+                    {step}
+                  </span>
+                  <p className="text-[#4b5563]">{text}</p>
+                </div>
+              ))}
             </div>
 
-            <p className="muted mt-4 border-t border-[#edf1ee] pt-4 text-xs">
-              FlowGuard calculates a safe daily spend by subtracting upcoming obligations, 
-              required buffer top-ups, and savings goals from your forecasted income, 
-              then spreading the remainder across days until next income.
-            </p>
+            <div className="mt-5 rounded-lg bg-[#f9fafb] p-3 text-xs text-[#6b7280] border border-[#f0f0f0]">
+              This is a recommendation, not a guarantee. It updates daily based on your income
+              and spending patterns.
+            </div>
           </div>
         </div>
       )}

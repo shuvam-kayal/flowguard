@@ -12,28 +12,28 @@ const SCENARIO_CARDS: {
   label: string;
   description: string;
   badge: string;
-  badgeColor: string;
+  badgeClass: string;
 }[] = [
   {
-    value:       "NORMAL",
-    label:       "Normal",
-    description: "Baseline scenario with real dashboard data for the selected worker.",
-    badge:       "Live data",
-    badgeColor:  "status-pill-green",
+    value: "NORMAL",
+    label: "Normal",
+    description: "Shows real dashboard data for the current worker with no changes.",
+    badge: "Live",
+    badgeClass: "badge-green",
   },
   {
-    value:       "SHOCK",
-    label:       "Income Shock",
-    description: "Simulates a significant income dip via /simulate/shock. Risk and forecast are adjusted.",
-    badge:       "Simulation",
-    badgeColor:  "status-pill-red",
+    value: "SHOCK",
+    label: "Income Shock",
+    description: "Simulates a sudden income drop to see how the dashboard responds.",
+    badge: "Simulation",
+    badgeClass: "badge-red",
   },
   {
-    value:       "RECOVERY",
-    label:       "Recovery",
-    description: "Post-shock recovery mode via /simulate/recovery. Income trend turns positive.",
-    badge:       "Simulation",
-    badgeColor:  "status-pill-blue",
+    value: "RECOVERY",
+    label: "Recovery",
+    description: "Shows what recovery looks like after an income shock.",
+    badge: "Simulation",
+    badgeClass: "badge-blue",
   },
 ];
 
@@ -49,19 +49,27 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <p className="eyebrow">Settings</p>
-      <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Demo &amp; worker settings</h1>
-      <p className="muted mt-2">
-        Use scenarios to demonstrate how FlowGuard adapts to different financial conditions.
-      </p>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Header ── */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Settings</h1>
+        <p className="mt-1 text-sm text-[#6b7280]">
+          Manage your account and try out simulation scenarios.
+        </p>
+      </div>
 
-      <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_360px]">
-        {/* Scenario picker */}
-        <section className="panel">
-          <p className="eyebrow mb-4">Demo scenario</p>
-          <div className="space-y-3">
+      <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+        {/* ── Demo scenario picker ── */}
+        <section className="panel space-y-4">
+          <div>
+            <p className="text-base font-bold text-[#111827]">Demo Scenarios</p>
+            <p className="mt-1 text-sm text-[#6b7280]">
+              Switch between scenarios to see how FlowGuard responds to different financial
+              situations.
+            </p>
+          </div>
+
+          <div className="space-y-2">
             {SCENARIO_CARDS.map((card) => {
               const active = scenario === card.value;
               return (
@@ -69,28 +77,26 @@ export default function SettingsPage() {
                   key={card.value}
                   onClick={() => setScenario(card.value)}
                   disabled={loading}
-                  className={`w-full rounded-xl border-2 p-4 text-left transition-all duration-200 disabled:opacity-50 ${
+                  className={`w-full rounded-xl border-2 p-4 text-left transition-all duration-150 disabled:opacity-50 ${
                     active
-                      ? "border-[#087344] bg-[#f1faf4]"
-                      : "border-[#e4ebe5] bg-white hover:border-[#b9dfc8] hover:bg-[#fafcfa]"
+                      ? "border-[#087344] bg-[#f0faf4]"
+                      : "border-[#e5e7eb] bg-white hover:border-[#c3e6d3]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`grid h-5 w-5 place-items-center rounded-full border-2 ${
-                          active
-                            ? "border-[#087344] bg-[#087344]"
-                            : "border-[#c0d0c4] bg-white"
+                        className={`grid h-4 w-4 place-items-center rounded-full border-2 ${
+                          active ? "border-[#087344] bg-[#087344]" : "border-[#d1d5db]"
                         }`}
                       >
-                        {active && <CheckCircle2 size={12} className="text-white" />}
+                        {active && <CheckCircle2 size={10} className="text-white" />}
                       </div>
-                      <p className="font-bold text-[#16231a]">{card.label}</p>
+                      <p className="text-sm font-semibold text-[#111827]">{card.label}</p>
                     </div>
-                    <span className={card.badgeColor}>{card.badge}</span>
+                    <span className={card.badgeClass}>{card.badge}</span>
                   </div>
-                  <p className="muted mt-2 ml-8 text-xs">{card.description}</p>
+                  <p className="mt-2 ml-7 text-xs text-[#6b7280]">{card.description}</p>
                 </button>
               );
             })}
@@ -99,83 +105,89 @@ export default function SettingsPage() {
           <button
             onClick={() => refetch()}
             disabled={loading}
-            className="btn-ghost mt-4 w-full justify-center text-sm disabled:opacity-50"
+            className="btn-ghost w-full justify-center text-sm"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             {loading ? "Loading…" : "Refresh data"}
           </button>
         </section>
 
-        {/* Worker profile + API status */}
-        <div className="flex flex-col gap-5">
-          {/* Worker profile */}
+        {/* ── Right column ── */}
+        <div className="space-y-4">
+          {/* Profile */}
           <section className="panel">
-            <p className="eyebrow mb-4">Worker context</p>
+            <p className="eyebrow mb-3">Your profile</p>
             {loading && !data ? (
-              <div className="space-y-3">
-                <Skeleton className="h-5 w-32" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-48" />
                 <Skeleton className="h-4 w-40" />
               </div>
             ) : data ? (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="grid h-12 w-12 place-items-center rounded-full bg-[#dff1e5] text-lg font-extrabold text-[#087344]">
-                    {data.worker.name.split(" ").slice(0,2).map(n=>n[0]).join("")}
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-[#e8f5ee] text-sm font-bold text-[#087344]">
+                    {data.worker.name.split(" ").slice(0, 2).map((n) => n[0]).join("")}
                   </div>
                   <div>
-                    <p className="font-extrabold">{data.worker.name}</p>
-                    <p className="muted text-xs">{data.worker.worker_id}</p>
+                    <p className="text-sm font-bold text-[#111827]">{data.worker.name}</p>
+                    <p className="text-xs text-[#9ca3af]">{data.worker.occupation}</p>
                   </div>
                 </div>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2">
                   {[
-                    { label: "Occupation",       value: data.worker.occupation },
-                    { label: "Current balance",  value: formatINR(data.worker.current_balance) },
-                    { label: "Resilience score", value: `${data.resilience.resilience_score} / 100` },
-                    { label: "Risk level",       value: data.risk.risk_level },
-                    { label: "Mode",             value: data.resilience.mode },
+                    { label: "Worker ID",       value: data.worker.worker_id },
+                    { label: "Current balance", value: formatINR(data.worker.current_balance) },
+                    { label: "Health score",    value: `${data.resilience.resilience_score} / 100` },
+                    { label: "Risk level",      value: data.risk.risk_level },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between border-b border-[#edf1ee] pb-2 last:border-0">
-                      <span className="text-[#718078]">{label}</span>
-                      <strong className="text-[#16231a]">{value}</strong>
+                    <div key={label} className="flex justify-between border-b border-[#f0f0f0] pb-2 last:border-0 text-sm">
+                      <span className="text-[#6b7280]">{label}</span>
+                      <strong className="text-[#111827]">{value}</strong>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <p className="muted">No worker data loaded.</p>
+              <p className="text-sm text-[#9ca3af]">No profile loaded.</p>
             )}
           </section>
 
-          {/* API Health */}
+          {/* API status */}
           <section className="panel">
             <div className="flex items-center gap-2 mb-3">
-              <Server size={16} className="text-[#718078]" />
-              <p className="eyebrow">API health</p>
+              <Server size={14} className="text-[#9ca3af]" />
+              <p className="eyebrow">System status</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <div
-                className={`h-2.5 w-2.5 rounded-full ${
+                className={`h-2 w-2 rounded-full ${
                   apiStatus === "ok"
-                    ? "bg-[#23aa6b] shadow-[0_0_6px_#23aa6b]"
+                    ? "bg-[#087344]"
                     : apiStatus === "error"
-                    ? "bg-[#b93a3a]"
-                    : "bg-[#e8a838] animate-pulse"
+                    ? "bg-[#c0392b]"
+                    : "bg-[#d97706] animate-pulse"
                 }`}
               />
-              <p className="text-sm font-bold">
-                {apiStatus === "ok"
-                  ? "Backend connected"
-                  : apiStatus === "error"
-                  ? "Backend unreachable"
-                  : "Checking…"}
+              <p className="text-sm font-semibold text-[#374151]">
+                {apiStatus === "ok" ? "Backend connected" : apiStatus === "error" ? "Backend unreachable" : "Checking…"}
               </p>
             </div>
-            <p className="muted mt-1 text-xs">
+            <p className="mt-1.5 text-xs text-[#9ca3af]">
               {process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}
             </p>
           </section>
+
+          {/* Sign out */}
+          <button
+            onClick={() => {
+              localStorage.removeItem("flowguard_token");
+              window.location.href = "/login";
+            }}
+            className="w-full rounded-lg border border-[#f5c6c2] bg-[#fef5f4] px-4 py-3 text-sm font-semibold text-[#c0392b] hover:bg-[#fde8e4] transition-colors"
+          >
+            Sign out of FlowGuard
+          </button>
         </div>
       </div>
     </div>

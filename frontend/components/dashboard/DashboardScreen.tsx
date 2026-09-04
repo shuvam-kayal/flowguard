@@ -11,13 +11,15 @@ import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { formatINR } from "@/lib/formatters";
 import { adaptForecastPoints } from "@/lib/api";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export function DashboardScreen() {
   const { data, loading, error, refetch } = useScenario();
 
   if (loading) return <DashboardSkeleton />;
   if (error || !data) {
-    return <ErrorState message={error ?? "No dashboard data found."} onRetry={refetch} />;
+    return <ErrorState message={error ?? "Unable to load your financial data."} onRetry={refetch} />;
   }
 
   const { resilience, forecast, worker, obligations, recommendations } = data;
@@ -26,75 +28,75 @@ export function DashboardScreen() {
   const firstName = worker.name.split(" ")[0];
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <p className="eyebrow">Good day, {firstName}</p>
-      <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
-        Your financial health for today
-      </h1>
-      <p className="muted mt-2">
-        FlowGuard helps you protect cash flow before stress arrives.
-      </p>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Page Header ── */}
+      <div>
+        <p className="text-sm text-[#6b7280]">Good day, {firstName}</p>
+        <h1 className="mt-0.5 text-2xl font-bold text-[#111827] tracking-tight">
+          Your financial overview
+        </h1>
+      </div>
 
-      {/* Row 1: Safe-to-spend + Health + Weather */}
-      <div className="mt-7 grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
+      {/* ── Row 1: Hero + Health + Weather ── */}
+      <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+        {/* Hero: safe to spend */}
         <SafeToSpendCard resilience={resilience} />
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
+
+        {/* Right column: health + weather stacked */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
           <ResilienceScore resilience={resilience} />
           <FinancialWeather forecast={forecast} />
         </div>
       </div>
 
-      {/* Row 2: Chart + Obligations */}
-      <div className="mt-5 grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
-        <CashFlowChart points={chartPoints} />
+      {/* ── Row 2: Upcoming bills + Action ── */}
+      <div className="grid gap-4 lg:grid-cols-2">
         <UpcomingObligations summary={obligations} />
+        <ActionCenter recommendations={recommendations} shock={isShock} />
       </div>
 
-      {/* Row 3: Buffer progress + Actions */}
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        {/* Emergency buffer card */}
-        <section className="panel">
-          <p className="eyebrow">Emergency buffer</p>
-          <div className="mt-3 flex items-end justify-between">
-            <h2 className="text-2xl font-extrabold">
-              {formatINR(resilience.buffer_current)}{" "}
-              <span className="text-base font-normal text-[#718078]">
-                / {formatINR(resilience.buffer_target)}
-              </span>
-            </h2>
-            <span className="text-sm font-bold text-[#087344]">
-              {Math.round((resilience.buffer_current / resilience.buffer_target) * 100)}%
-            </span>
-          </div>
-          <div className="progress-track mt-3">
-            <div
-              className="progress-fill-green"
-              style={{
-                width: `${Math.min(100, (resilience.buffer_current / resilience.buffer_target) * 100)}%`,
-              }}
-            />
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-[#f6f8f5] p-4 text-xs">
-            {Object.entries({
-              "Income stability": resilience.score_breakdown.income_stability,
-              "Emergency buffer": resilience.score_breakdown.emergency_buffer,
-              "Expense coverage": resilience.score_breakdown.expense_coverage,
-              "Debt burden":      resilience.score_breakdown.debt_burden,
-              "Savings consistency": resilience.score_breakdown.savings_consistency,
-            }).map(([label, val]) => (
-              <div key={label}>
-                <p className="text-[#718078]">{label}</p>
-                <p className="font-bold text-[#16231a]">{val}</p>
-              </div>
-            ))}
-          </div>
-          <p className="muted mt-3 text-xs">
-            Your first line of defence for essential expenses.
-          </p>
-        </section>
+      {/* ── Row 3: Income chart ── */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-[#374151]">Income this month</p>
+          <Link
+            href="/forecast"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-[#087344] hover:underline"
+          >
+            Full income details <ArrowRight size={12} />
+          </Link>
+        </div>
+        <CashFlowChart points={chartPoints} />
+      </div>
 
-        <ActionCenter recommendations={recommendations} shock={isShock} />
+      {/* ── Row 4: Quick summary strip ── */}
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
+        {[
+          {
+            label: "Expected this month",
+            value: formatINR(forecast.next_30_days),
+            href: "/forecast",
+          },
+          {
+            label: "Safety net savings",
+            value: `${Math.min(100, Math.round((resilience.buffer_current / resilience.buffer_target) * 100))}% of goal`,
+            href: "/resilience",
+          },
+          {
+            label: "Safe to spend / day",
+            value: formatINR(resilience.safe_to_spend_daily),
+            href: "/resilience",
+          },
+        ].map(({ label, value, href }) => (
+          <Link
+            key={label}
+            href={href}
+            className="panel text-center hover:border-[#c3e6d3] hover:shadow-sm transition-all"
+          >
+            <p className="text-xs text-[#9ca3af]">{label}</p>
+            <p className="mt-1 text-lg font-bold text-[#111827]">{value}</p>
+          </Link>
+        ))}
       </div>
     </div>
   );

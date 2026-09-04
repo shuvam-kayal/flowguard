@@ -8,8 +8,8 @@ import Link from "next/link";
 export default function LoginPage() {
   const [workerId, setWorkerId] = useState("W001");
   const [password, setPassword] = useState("password123");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [loading, setLoading]   = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -21,83 +21,77 @@ export default function LoginPage() {
       const data = await apiLogin(workerId, password);
       localStorage.setItem("flowguard_token", data.access_token);
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Failed to login. Check your credentials.");
+    } catch {
+      setError("Incorrect Worker ID or password. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="panel w-full max-w-md p-8 animate-fade-in shadow-xl">
+    <div className="flex min-h-screen items-center justify-center p-4 bg-[#f9fafb]">
+      <div className="w-full max-w-sm">
+        {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-black">
-            <svg
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-[#0f3726]">
+            <span className="text-lg font-black text-white">F</span>
           </div>
-          <h1 className="mt-4 text-2xl font-extrabold text-[#16231a]">FlowGuard</h1>
-          <p className="muted mt-2 text-sm">Sign in to your financial dashboard</p>
+          <h1 className="mt-4 text-xl font-bold text-[#111827]">Sign in to FlowGuard</h1>
+          <p className="mt-1 text-sm text-[#6b7280]">Your gig worker financial dashboard</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
-              {error}
+        <div className="rounded-xl border border-[#e5e7eb] bg-white p-6 shadow-sm">
+          <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="rounded-lg border border-[#f5c6c2] bg-[#fef5f4] px-3.5 py-3 text-sm text-[#c0392b]">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-[#374151]">
+                Worker ID
+              </label>
+              <input
+                type="text"
+                value={workerId}
+                onChange={(e) => setWorkerId(e.target.value)}
+                className="input"
+                placeholder="e.g. W001"
+                required
+                autoComplete="username"
+              />
             </div>
-          )}
-          
-          <div>
-            <label className="mb-2 block text-sm font-bold text-[#16231a]">
-              Worker ID
-            </label>
-            <input
-              type="text"
-              value={workerId}
-              onChange={(e) => setWorkerId(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              required
-            />
+
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-[#374151]">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
+                required
+                autoComplete="current-password"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary mt-1 w-full justify-center"
+            >
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+
+          <div className="mt-5 text-center text-sm">
+            <span className="text-[#9ca3af]">New to FlowGuard? </span>
+            <Link href="/signup" className="font-semibold text-[#087344] hover:underline">
+              Create an account
+            </Link>
           </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-bold text-[#16231a]">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-[#16231a] px-4 py-3 font-bold text-white transition-colors hover:bg-black disabled:opacity-50 mt-4"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm">
-          <span className="text-gray-500">Don't have an account? </span>
-          <Link href="/signup" className="font-bold text-black hover:underline">
-            Sign up
-          </Link>
         </div>
       </div>
     </div>

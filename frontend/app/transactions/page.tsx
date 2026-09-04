@@ -6,15 +6,24 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { formatINR } from "@/lib/formatters";
 import { daysUntil } from "@/lib/api";
-import { Calendar, Clock, TrendingDown, WalletCards } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
-type FilterCategory = "All" | "FIXED" | "DEBT" | "UTILITY" | "OTHER";
+type FilterCategory = "All" | "FIXED" | "DEBT" | "UTILITY" | "OTHER" | "HOUSING";
 
-const CATEGORY_PILL: Record<string, string> = {
-  FIXED:   "status-pill bg-[#e8f0fe] text-[#1a56db]",
-  DEBT:    "status-pill bg-[#fde8e8] text-[#9b2c2c]",
-  UTILITY: "status-pill bg-[#fff0d6] text-[#9a570a]",
-  OTHER:   "status-pill bg-[#edf2ee] text-[#526158]",
+const CATEGORY_LABEL: Record<string, string> = {
+  FIXED:   "Fixed",
+  DEBT:    "Loan/EMI",
+  UTILITY: "Utility",
+  OTHER:   "Other",
+  HOUSING: "Housing",
+};
+
+const CATEGORY_BADGE: Record<string, string> = {
+  FIXED:   "badge-blue",
+  DEBT:    "badge-red",
+  UTILITY: "badge-amber",
+  OTHER:   "badge-gray",
+  HOUSING: "badge-blue",
 };
 
 export default function TransactionsPage() {
@@ -23,152 +32,124 @@ export default function TransactionsPage() {
 
   if (loading) return <TableSkeleton rows={6} />;
   if (!data || error) {
-    return <ErrorState message={error ?? "No transaction data found."} onRetry={refetch} />;
+    return <ErrorState message={error ?? "Unable to load bills data."} onRetry={refetch} />;
   }
 
-  const { obligations, resilience, forecast } = data;
-  const filtered = obligations.upcoming_obligations.filter(
-    (o) => filter === "All" || o.category === filter
-  );
+  const { obligations, resilience } = data;
+  const allObs = obligations.upcoming_obligations;
+  const filtered = filter === "All" ? allObs : allObs.filter((o) => o.category === filter);
 
-  const filterTabs: FilterCategory[] = ["All", "FIXED", "DEBT", "UTILITY", "OTHER"];
+  // Unique categories present
+  const categories = ["All", ...Array.from(new Set(allObs.map((o) => o.category)))] as FilterCategory[];
+
+  // Urgent bills
+  const urgentCount = allObs.filter((o) => daysUntil(o.due_date) <= 5).length;
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <p className="eyebrow">Transactions &amp; Obligations</p>
-      <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
-        Know where your money flows
-      </h1>
-      <p className="muted mt-2">
-        Upcoming financial obligations tracked by FlowGuard's resilience plan.
-      </p>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Header ── */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Bills & Payments</h1>
+        <p className="mt-1 text-sm text-[#6b7280]">
+          All upcoming payments tracked by FlowGuard.
+        </p>
+      </div>
 
-      {/* Summary stats */}
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        <section className="stat-card">
-          <div className="flex items-center justify-between">
-            <p className="eyebrow">Total upcoming</p>
-            <TrendingDown size={16} className="text-[#b93a3a]" />
-          </div>
-          <p className="mt-3 text-2xl font-extrabold">
-            {formatINR(obligations.total_upcoming)}
+      {/* ── Urgent alert ── */}
+      {urgentCount > 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-[#f5c6c2] bg-[#fef5f4] px-4 py-3">
+          <AlertCircle size={16} className="mt-0.5 shrink-0 text-[#c0392b]" />
+          <p className="text-sm font-semibold text-[#c0392b]">
+            {urgentCount} payment{urgentCount > 1 ? "s are" : " is"} due within 5 days
           </p>
-          <p className="muted text-xs mt-1">Across {obligations.upcoming_obligations.length} obligations</p>
-        </section>
+        </div>
+      )}
 
-        <section className="stat-card">
-          <div className="flex items-center justify-between">
-            <p className="eyebrow">Daily essential</p>
-            <Clock size={16} className="text-[#b66b0b]" />
-          </div>
-          <p className="mt-3 text-2xl font-extrabold">
+      {/* ── Summary ── */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <section className="panel text-center">
+          <p className="text-xs text-[#9ca3af]">Total due</p>
+          <p className="mt-1 text-xl font-bold text-[#c0392b]">{formatINR(obligations.total_upcoming)}</p>
+          <p className="mt-0.5 text-[10px] text-[#9ca3af]">{allObs.length} bills</p>
+        </section>
+        <section className="panel text-center">
+          <p className="text-xs text-[#9ca3af]">Minimum daily spend</p>
+          <p className="mt-1 text-xl font-bold text-[#111827]">
             {formatINR(obligations.essential_daily_spend)}
-            <span className="text-sm font-normal text-[#718078]">/day</span>
           </p>
-          <p className="muted text-xs mt-1">Minimum spend to cover essentials</p>
+          <p className="mt-0.5 text-[10px] text-[#9ca3af]">to cover essentials</p>
         </section>
-
-        <section className="stat-card">
-          <div className="flex items-center justify-between">
-            <p className="eyebrow">Safe to spend</p>
-            <WalletCards size={16} className="text-[#087344]" />
-          </div>
-          <p className="mt-3 text-2xl font-extrabold text-[#087344]">
+        <section className="panel text-center col-span-2 sm:col-span-1">
+          <p className="text-xs text-[#9ca3af]">Safe to spend</p>
+          <p className="mt-1 text-xl font-bold text-[#087344]">
             {formatINR(resilience.safe_to_spend_daily)}
-            <span className="text-sm font-normal text-[#718078]">/day</span>
           </p>
-          <p className="muted text-xs mt-1">After all obligations covered</p>
+          <p className="mt-0.5 text-[10px] text-[#9ca3af]">after all bills covered</p>
         </section>
       </div>
 
-      {/* Filter tabs */}
-      <div className="mt-6 flex flex-wrap gap-2">
-        {filterTabs.map((tab) => (
+      {/* ── Filter ── */}
+      <div className="flex flex-wrap gap-2">
+        {categories.map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
-            className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-150 ${
+            className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-all duration-150 ${
               filter === tab
-                ? "bg-[#087344] text-white shadow-sm"
-                : "bg-white text-[#526158] ring-1 ring-[#e4ebe5] hover:ring-[#b9dfc8]"
+                ? "bg-[#087344] text-white"
+                : "bg-white text-[#6b7280] ring-1 ring-[#e5e7eb] hover:ring-[#c3e6d3]"
             }`}
           >
-            {tab === "All" ? "All" : tab.charAt(0) + tab.slice(1).toLowerCase()}
+            {tab === "All" ? "All" : CATEGORY_LABEL[tab] ?? tab}
           </button>
         ))}
       </div>
 
-      {/* Obligations table */}
-      <section className="panel mt-4 overflow-x-auto">
-        <table className="w-full min-w-[520px] text-left text-sm">
-          <thead className="border-b border-[#e4ebe5] text-[11px] uppercase tracking-wider text-[#718078]">
-            <tr>
-              <th className="pb-3 pr-4">Obligation</th>
-              <th className="pb-3 pr-4">Category</th>
-              <th className="pb-3 pr-4">Due date</th>
-              <th className="pb-3 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="py-10 text-center text-[#718078]">
-                  No obligations in this category.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((ob) => {
-                const days   = daysUntil(ob.due_date);
-                const urgent = days <= 5;
-                return (
-                  <tr
-                    key={`${ob.name}-${ob.due_date}`}
-                    className="border-b border-[#edf1ee] last:border-0 hover:bg-[#fafcfa] transition-colors"
-                  >
-                    <td className="py-4 pr-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-[#718078]" />
-                        <span className="font-bold">{ob.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 pr-4">
-                      <span className={CATEGORY_PILL[ob.category] ?? CATEGORY_PILL.OTHER}>
-                        {ob.category}
+      {/* ── Bills list ── */}
+      <section className="panel overflow-hidden !p-0">
+        {filtered.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-sm font-semibold text-[#9ca3af]">No bills in this category</p>
+            <p className="mt-1 text-xs text-[#c4c9ce]">Switch to "All" to see everything.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#f0f0f0]">
+            {filtered.map((ob) => {
+              const days   = daysUntil(ob.due_date);
+              const urgent = days <= 5;
+              const badgeClass = CATEGORY_BADGE[ob.category] ?? "badge-gray";
+              return (
+                <div
+                  key={`${ob.name}-${ob.due_date}`}
+                  className={`flex items-center justify-between px-5 py-4 transition-colors ${urgent ? "bg-[#fef5f4]" : "hover:bg-[#f9fafb]"}`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-[#111827]">{ob.name}</p>
+                      <span className={badgeClass}>
+                        {CATEGORY_LABEL[ob.category] ?? ob.category}
                       </span>
-                    </td>
-                    <td className="py-4 pr-4">
-                      <div>
-                        <p className={`text-xs font-semibold ${urgent ? "text-[#b93a3a]" : "text-[#718078]"}`}>
-                          {days === 0 ? "Due today" : `${days} day${days === 1 ? "" : "s"}`}
-                        </p>
-                        <p className="text-[10px] text-[#b0bbb4]">{ob.due_date}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 text-right font-extrabold text-[#b93a3a]">
-                      {formatINR(ob.amount)}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                    </div>
+                    <p className={`mt-0.5 text-xs ${urgent ? "font-semibold text-[#c0392b]" : "text-[#9ca3af]"}`}>
+                      {days === 0 ? "Due today!" : urgent ? `Due in ${days} days — urgent` : `Due in ${days} days · ${ob.due_date}`}
+                    </p>
+                  </div>
+                  <strong className={`text-sm ${urgent ? "text-[#c0392b]" : "text-[#111827]"}`}>
+                    {formatINR(ob.amount)}
+                  </strong>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
-      {/* Raw transaction notice */}
-      <section className="panel mt-5 flex items-start gap-4 bg-[#f6f8f5]">
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#e4ebe5]">
-          <WalletCards size={16} className="text-[#718078]" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-[#526158]">Transaction history</p>
-          <p className="muted mt-0.5">
-            Raw transaction history from connected gig platforms is coming soon.
-            FlowGuard currently uses obligation forecasts for your spending plan.
-          </p>
-        </div>
-      </section>
+      {/* ── Coming soon notice ── */}
+      <div className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-5 py-4 text-sm text-[#6b7280]">
+        <strong className="text-[#374151]">Transaction history coming soon.</strong>{" "}
+        FlowGuard will connect to your gig platforms to automatically track earnings and
+        spending. Right now, it uses your scheduled bills and obligations.
+      </div>
     </div>
   );
 }

@@ -1,65 +1,56 @@
 import type { ObligationSummary } from "@/types/dashboard";
 import { formatINR } from "@/lib/formatters";
 import { daysUntil } from "@/lib/api";
-import { Calendar } from "lucide-react";
-
-const CATEGORY_COLORS: Record<string, string> = {
-  FIXED:   "bg-[#e8f0fe] text-[#1a56db]",
-  DEBT:    "bg-[#fde8e8] text-[#9b2c2c]",
-  UTILITY: "bg-[#fff0d6] text-[#9a570a]",
-  OTHER:   "bg-[#edf2ee] text-[#526158]",
-};
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export function UpcomingObligations({ summary }: { summary: ObligationSummary }) {
+  const obligations = summary.upcoming_obligations.slice(0, 3); // Show top 3 on dashboard
+
   return (
     <section className="panel">
       <div className="mb-4 flex items-center justify-between">
-        <p className="eyebrow">Upcoming obligations</p>
-        <span className="text-sm font-bold text-[#087344]">
-          {formatINR(summary.total_upcoming)} total
+        <p className="eyebrow">Upcoming bills</p>
+        <span className="text-sm font-bold text-[#c0392b]">
+          {formatINR(summary.total_upcoming)} due
         </span>
       </div>
 
-      <div className="divide-y divide-[#edf1ee]">
-        {summary.upcoming_obligations.map((item) => {
-          const days = daysUntil(item.due_date);
-          const urgent = days <= 5;
-          const catClass = CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.OTHER;
-          return (
-            <div
-              key={`${item.name}-${item.due_date}`}
-              className="flex items-center justify-between py-3"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${catClass.split(" ")[0]}`}
-                >
-                  <Calendar size={13} className={catClass.split(" ")[1]} />
-                </div>
+      {obligations.length === 0 ? (
+        <p className="py-4 text-center text-sm text-[#9ca3af]">
+          No upcoming bills tracked yet.
+        </p>
+      ) : (
+        <div className="space-y-1">
+          {obligations.map((item) => {
+            const days = daysUntil(item.due_date);
+            const urgent = days <= 5;
+            return (
+              <div
+                key={`${item.name}-${item.due_date}`}
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-[#f9fafb] transition-colors"
+              >
                 <div>
-                  <p className="text-sm font-bold">{item.name}</p>
-                  <p className={`text-xs ${urgent ? "text-[#b93a3a] font-semibold" : "text-[#718078]"}`}>
-                    {days === 0 ? "Due today" : `Due in ${days} day${days === 1 ? "" : "s"}`}
+                  <p className="text-sm font-semibold text-[#111827]">{item.name}</p>
+                  <p className={`text-xs mt-0.5 ${urgent ? "text-[#c0392b] font-semibold" : "text-[#9ca3af]"}`}>
+                    {days === 0 ? "Due today!" : urgent ? `Due in ${days} days — urgent` : `Due in ${days} days`}
                   </p>
                 </div>
+                <strong className="text-sm text-[#111827]">{formatINR(item.amount)}</strong>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <strong className="text-sm">{formatINR(item.amount)}</strong>
-                <span className={`status-pill ${catClass}`}>{item.category}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      <div className="mt-4 rounded-xl bg-[#f6f8f5] px-4 py-3">
-        <p className="text-xs text-[#718078]">
-          Essential daily spend:{" "}
-          <strong className="text-[#16231a]">
-            {formatINR(summary.essential_daily_spend)}/day
-          </strong>
-        </p>
-      </div>
+      {summary.upcoming_obligations.length > 3 && (
+        <Link
+          href="/transactions"
+          className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[#087344] hover:underline"
+        >
+          View all {summary.upcoming_obligations.length} bills <ArrowRight size={12} />
+        </Link>
+      )}
     </section>
   );
 }

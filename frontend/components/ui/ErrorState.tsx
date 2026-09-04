@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 interface ErrorStateProps {
   message: string;
@@ -8,34 +8,42 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
-  const handleRetry = () => {
-    if (onRetry) {
-      onRetry();
-    } else {
-      window.location.reload();
-    }
-  };
+  const isAuth = message.includes("401") || message.includes("Unauthorized");
 
   return (
-    <div className="panel animate-fade-in max-w-lg">
-      <div className="flex items-start gap-4">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#fde8e8]">
-          <AlertTriangle size={18} className="text-[#b93a3a]" />
+    <div className="rounded-xl border border-[#f5c6c2] bg-[#fef5f4] p-6 animate-fade-in max-w-lg">
+      <div className="flex items-start gap-3">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#fde8e4]">
+          <AlertCircle size={17} className="text-[#c0392b]" />
         </div>
-        <div className="min-w-0">
-          <h2 className="text-base font-bold text-[#16231a]">
-            Unable to load your financial data
+        <div>
+          <h2 className="text-sm font-bold text-[#111827]">
+            {isAuth ? "Please sign in again" : "Something went wrong"}
           </h2>
-          <p className="muted mt-1 break-words">{message}</p>
+          <p className="mt-1 text-sm text-[#6b7280]">
+            {isAuth
+              ? "Your session has expired or you need to log in to view this page."
+              : "We couldn't load your financial data. This might be a temporary issue."}
+          </p>
         </div>
       </div>
-      <button
-        onClick={handleRetry}
-        className="btn-primary mt-5 text-sm"
-      >
-        <RefreshCw size={14} />
-        Try again
-      </button>
+      <div className="mt-4 flex gap-3">
+        <button
+          onClick={() => {
+            if (onRetry) onRetry();
+            else window.location.reload();
+          }}
+          className="btn-ghost text-sm"
+        >
+          <RefreshCw size={13} />
+          Try again
+        </button>
+        {isAuth && (
+          <a href="/login" className="btn-primary text-sm">
+            Sign in
+          </a>
+        )}
+      </div>
     </div>
   );
 }

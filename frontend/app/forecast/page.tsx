@@ -6,118 +6,102 @@ import { ForecastSkeleton } from "@/components/ui/Skeleton";
 import { useScenario } from "@/components/layout/ScenarioProvider";
 import { formatINR, formatPercent } from "@/lib/formatters";
 import { adaptForecastPoints } from "@/lib/api";
-import { TrendingUp, TrendingDown, Minus, Cloud, CloudRain, Sun } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Sun, Cloud, CloudRain } from "lucide-react";
 
-const TREND_META = {
-  RISING:   { icon: TrendingUp,   color: "text-[#087344]", label: "Rising",   pill: "status-pill-green" },
-  STABLE:   { icon: Minus,        color: "text-[#b66b0b]", label: "Stable",   pill: "status-pill-amber" },
-  DECLINING:{ icon: TrendingDown, color: "text-[#b93a3a]", label: "Declining",pill: "status-pill-red" },
-} as const;
+const TREND_PLAIN: Record<string, { icon: React.ElementType; label: string; description: string; color: string }> = {
+  RISING:    { icon: TrendingUp,   label: "Income is growing",    description: "You have been earning more recently. Keep it up!", color: "text-[#087344]" },
+  STABLE:    { icon: Minus,        label: "Income is steady",     description: "Your earnings have been consistent. That's a good sign.", color: "text-[#92580a]" },
+  DECLINING: { icon: TrendingDown, label: "Income has dropped",   description: "Your recent earnings are lower than before. Try to take on extra work if you can.", color: "text-[#c0392b]" },
+};
 
-const WEATHER_META = {
-  STABLE:  { icon: Sun,       label: "Clear skies",     pill: "status-pill-green", desc: "Your income outlook is steady." },
-  WATCH:   { icon: Cloud,     label: "Watch",           pill: "status-pill-amber", desc: "Minor volatility detected." },
-  SHOCK:   { icon: CloudRain, label: "Income shock",    pill: "status-pill-red",   desc: "Significant income dip ahead." },
-} as const;
+const WEATHER_PLAIN: Record<string, { icon: React.ElementType; label: string; bg: string; color: string }> = {
+  STABLE: { icon: Sun,       label: "Good outlook",     bg: "bg-[#f0faf4]", color: "text-[#087344]" },
+  WATCH:  { icon: Cloud,     label: "Some uncertainty", bg: "bg-[#fef9ec]", color: "text-[#92580a]" },
+  SHOCK:  { icon: CloudRain, label: "Income risk",      bg: "bg-[#fef5f4]", color: "text-[#c0392b]" },
+};
 
 export default function ForecastPage() {
   const { data, loading, error, refetch } = useScenario();
 
   if (loading) return <ForecastSkeleton />;
   if (!data || error) {
-    return <ErrorState message={error ?? "No forecast data found."} onRetry={refetch} />;
+    return <ErrorState message={error ?? "Unable to load income forecast."} onRetry={refetch} />;
   }
 
   const { forecast } = data;
-  const chartPoints = adaptForecastPoints(forecast.daily_forecast);
-  const trendMeta   = TREND_META[forecast.trend] ?? TREND_META.STABLE;
-  const weatherMeta = WEATHER_META[forecast.weather] ?? WEATHER_META.STABLE;
-  const TrendIcon   = trendMeta.icon;
-  const WeatherIcon = weatherMeta.icon;
-
-  const stats = [
-    {
-      label: "Next 7 days",
-      value: formatINR(forecast.next_7_days),
-      sub:   "Expected income",
-      icon:  TrendIcon,
-      iconColor: trendMeta.color,
-    },
-    {
-      label: "Next 30 days",
-      value: formatINR(forecast.next_30_days),
-      sub:   `Range: ${formatINR(forecast.lower_bound)} – ${formatINR(forecast.upper_bound)}`,
-      icon:  TrendIcon,
-      iconColor: trendMeta.color,
-    },
-    {
-      label: "Shock probability",
-      value: formatPercent(forecast.shock_probability),
-      sub:   "30-day risk estimate",
-      icon:  WeatherIcon,
-      iconColor: forecast.shock_probability > 0.5 ? "text-[#b93a3a]" : "text-[#b66b0b]",
-    },
-  ];
+  const chartPoints  = adaptForecastPoints(forecast.daily_forecast);
+  const trendMeta    = TREND_PLAIN[forecast.trend] ?? TREND_PLAIN.STABLE;
+  const weatherMeta  = WEATHER_PLAIN[forecast.weather] ?? WEATHER_PLAIN.STABLE;
+  const TrendIcon    = trendMeta.icon;
+  const WeatherIcon  = weatherMeta.icon;
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <p className="eyebrow">Financial forecast</p>
-      <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
-        What's likely to happen to your income?
-      </h1>
-      <p className="muted mt-2">Predictions are probability estimates, not guarantees.</p>
-
-      {/* Weather + Trend badges */}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <span className={weatherMeta.pill}>
-          <WeatherIcon size={11} className="mr-1 inline" />
-          {weatherMeta.label}
-        </span>
-        <span className={trendMeta.pill}>
-          <TrendIcon size={11} className="mr-1 inline" />
-          {forecast.trend.charAt(0) + forecast.trend.slice(1).toLowerCase()}
-        </span>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Header ── */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Income Outlook</h1>
+        <p className="mt-1 text-sm text-[#6b7280]">
+          Based on your recent gig earnings and spending patterns.
+        </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        {stats.map(({ label, value, sub, icon: Icon, iconColor }) => (
-          <section key={label} className="stat-card animate-slide-up">
-            <div className="flex items-center justify-between">
-              <p className="eyebrow">{label}</p>
-              <Icon size={18} className={iconColor} />
-            </div>
-            <p className="mt-3 text-2xl font-extrabold">{value}</p>
-            <p className="muted text-xs mt-1">{sub}</p>
+      {/* ── Trend banner ── */}
+      <div className="flex items-start gap-4 rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-sm">
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${weatherMeta.bg}`}>
+          <TrendIcon size={18} className={trendMeta.color} />
+        </div>
+        <div>
+          <p className={`text-base font-bold ${trendMeta.color}`}>{trendMeta.label}</p>
+          <p className="mt-0.5 text-sm text-[#6b7280]">{trendMeta.description}</p>
+        </div>
+      </div>
+
+      {/* ── Three key numbers ── */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          {
+            label: "Expected in the next 7 days",
+            value: formatINR(forecast.next_7_days),
+            note: "This week's likely income",
+            color: "text-[#111827]",
+          },
+          {
+            label: "Expected this month",
+            value: formatINR(forecast.next_30_days),
+            note: `Could be between ${formatINR(forecast.lower_bound)} and ${formatINR(forecast.upper_bound)}`,
+            color: "text-[#111827]",
+          },
+          {
+            label: "Chance of income drop",
+            value: `${Math.round(forecast.shock_probability * 100)}%`,
+            note: "Probability of a significant fall this month",
+            color: forecast.shock_probability > 0.4 ? "text-[#c0392b]" : forecast.shock_probability > 0.2 ? "text-[#92580a]" : "text-[#087344]",
+          },
+        ].map(({ label, value, note, color }) => (
+          <section key={label} className="panel">
+            <p className="eyebrow">{label}</p>
+            <p className={`mt-3 text-3xl font-bold ${color}`}>{value}</p>
+            <p className="mt-1 text-xs text-[#9ca3af]">{note}</p>
           </section>
         ))}
       </div>
 
-      {/* Chart */}
-      <div className="mt-5">
-        <CashFlowChart points={chartPoints} />
-      </div>
+      {/* ── Chart ── */}
+      <CashFlowChart points={chartPoints} />
 
-      {/* Outlook explanation */}
-      <section className="panel mt-5 animate-slide-up">
-        <div className="flex items-start gap-4">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f1faf4]">
-            <WeatherIcon size={18} className={forecast.weather === "SHOCK" ? "text-[#b93a3a]" : "text-[#087344]"} />
+      {/* ── Plain language explanation ── */}
+      <section className="panel">
+        <div className="flex items-start gap-3">
+          <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${weatherMeta.bg}`}>
+            <WeatherIcon size={16} className={weatherMeta.color} />
           </div>
           <div>
-            <p className="eyebrow">Why this outlook?</p>
-            <h2 className="mt-1 text-base font-bold">
-              {forecast.trend === "DECLINING"
-                ? "Income volatility is increasing."
-                : forecast.trend === "RISING"
-                ? "Your income is building momentum."
-                : "Your recent income pattern is stabilising."}
-            </h2>
-            <p className="muted mt-2">
-              {weatherMeta.desc} FlowGuard compares recent gig income with your normal earning
-              range and upcoming obligations. Confidence:{" "}
-              <strong>{formatPercent(1 - forecast.shock_probability)}</strong>.
+            <p className="text-sm font-bold text-[#111827]">How we estimate your income</p>
+            <p className="mt-2 text-sm text-[#6b7280] leading-relaxed">
+              We look at your recent gig platform earnings, the time of month, and typical
+              patterns for your type of work. The chart shows our best estimate (solid line)
+              and a range of possible outcomes (shaded area). Confidence:{" "}
+              <strong className="text-[#111827]">{formatPercent(1 - forecast.shock_probability)}</strong>.
             </p>
           </div>
         </div>

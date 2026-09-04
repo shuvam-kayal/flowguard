@@ -4,75 +4,103 @@ interface SkeletonProps {
   className?: string;
 }
 
-/** Base shimmer block. Compose with height + width classes. */
 export function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-xl bg-gradient-to-r from-[#e8eeea] via-[#f2f5f3] to-[#e8eeea] bg-[length:400%_100%]",
+        "animate-pulse rounded-xl bg-[#f0f0f0]",
         className
       )}
-      style={{ animation: "pulse 1.8s ease-in-out infinite, shimmer 2s linear infinite" }}
     />
   );
 }
 
-/** Full dashboard loading skeleton — 2-column grid layout */
 export function DashboardSkeleton() {
   return (
-    <div className="animate-fade-in grid gap-5">
-      <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
-        <Skeleton className="h-48" />
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
-          <Skeleton className="h-[90px]" />
-          <Skeleton className="h-[90px]" />
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="space-y-1.5">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-7 w-56" />
+      </div>
+      {/* Row 1 */}
+      <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+        <Skeleton className="h-52" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+          <Skeleton className="h-[108px]" />
+          <Skeleton className="h-[108px]" />
         </div>
       </div>
-      <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
-        <Skeleton className="h-72" />
-        <Skeleton className="h-72" />
+      {/* Row 2 */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-52" />
+        <Skeleton className="h-52" />
       </div>
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
+      {/* Chart */}
+      <Skeleton className="h-64" />
+      {/* Summary strip */}
+      <div className="grid grid-cols-3 gap-3">
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
       </div>
     </div>
   );
 }
 
-/** Forecast page skeleton */
 export function ForecastSkeleton() {
   return (
-    <div className="animate-fade-in grid gap-5">
+    <div className="space-y-6 animate-fade-in">
+      <div className="space-y-1.5">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <Skeleton className="h-16" />
       <div className="grid gap-4 sm:grid-cols-3">
         <Skeleton className="h-24" />
         <Skeleton className="h-24" />
         <Skeleton className="h-24" />
       </div>
-      <Skeleton className="h-72" />
+      <Skeleton className="h-64" />
       <Skeleton className="h-28" />
     </div>
   );
 }
 
-/** Resilience page skeleton */
 export function ResilienceSkeleton() {
   return (
-    <div className="animate-fade-in grid gap-5 lg:grid-cols-2">
-      <Skeleton className="h-80" />
-      <Skeleton className="h-80" />
+    <div className="space-y-6 animate-fade-in">
+      <div className="space-y-1.5">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <Skeleton className="h-14" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-80" />
+        <div className="space-y-4">
+          <Skeleton className="h-40" />
+          <Skeleton className="h-36" />
+        </div>
+      </div>
     </div>
   );
 }
 
-/** Generic table/list skeleton */
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="panel animate-fade-in">
-      <Skeleton className="mb-5 h-5 w-40" />
-      <div className="space-y-3">
+    <div className="space-y-6 animate-fade-in">
+      <div className="space-y-1.5">
+        <Skeleton className="h-7 w-40" />
+        <Skeleton className="h-4 w-56" />
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
+      </div>
+      <div className="space-y-2">
         {Array.from({ length: rows }).map((_, i) => (
-          <Skeleton key={i} className="h-10" />
+          <Skeleton key={i} className="h-14" />
         ))}
       </div>
     </div>

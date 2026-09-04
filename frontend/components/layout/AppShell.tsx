@@ -7,8 +7,8 @@ import { MobileNav } from "./MobileNav";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/signup") {
-    return <main className="min-h-screen bg-[#f6f8f5]">{children}</main>;
+  if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
+    return <>{children}</>;
   }
 
   return (
