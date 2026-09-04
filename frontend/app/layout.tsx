@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { ScenarioProvider } from "@/components/layout/ScenarioProvider";
 import { QueryProvider } from "@/components/layout/QueryProvider";
-
+import { Inter } from "next/font/google";
 import { AuthProvider } from "@/components/layout/AuthProvider";
 
 const inter = Inter({
@@ -24,7 +23,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <body>
         <QueryProvider>
           <AuthProvider>
