@@ -15,6 +15,10 @@ Output:
   ResilienceResult (#5)  +  list[Recommendation] (#6)
 """
 from __future__ import annotations
+try:
+    from resilience.utils import get_value
+except ModuleNotFoundError:  # Support direct execution: python resilience/engine.py
+    from utils import get_value
 
 # score component caps (must sum to 100)
 CAP = {"income_stability": 25, "emergency_buffer": 25,
@@ -24,40 +28,55 @@ CAP = {"income_stability": 25, "emergency_buffer": 25,
 def _clamp(x, lo, hi):
     return max(lo, min(hi, x))
 
+def _get(obj, key, default=None):
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)
 
-def days_to_shock(forecast: dict, essential_daily: int) -> int | None:
-    """First day index (0-based) in the forecast window where expected daily
-    income dips below what's needed to cover essentials. Returns None if the
-    window never dips that low, so callers must not assume a number exists.
 
-    This reads Person 2's actual `daily_forecast` points — it is NOT a
-    hardcoded lead time. If `daily_forecast` is missing or empty (e.g. an
-    older/mocked forecast shape), we return None rather than guessing.
-    """
-    daily_fc = forecast.get("daily_forecast") or []
+def days_to_shock(forecast, essential_daily: int) -> int | None:
+    """Return the first forecast day where expected income falls below essentials."""
+    daily_fc = get_value(forecast, "daily_forecast", []) or []
+
     for i, point in enumerate(daily_fc):
-        if point["expected"] < essential_daily:
+        expected = get_value(point, "expected", 0)
+
+        if expected < essential_daily:
             return i
+
     return None
 
 
-def decide_mode(risk: dict, forecast: dict, profile: dict) -> str:
-    """State machine: NORMAL / WATCH / SHOCK / RECOVERY.
+def decide_mode(risk, forecast, profile) -> str:
+    """Determine NORMAL / WATCH / SHOCK / RECOVERY.
 
-    Forecast is the forward-looking signal, so its `trend`/`weather` win when
-    present; the profile's historical `income_trend` is only a fallback. This
-    means RECOVERY is driven by Person 2's forecast, not just a static persona
-    field, so it still fires once real forecasts flow in.
+    Accepts both dictionaries and Pydantic model instances.
     """
-    weather = forecast["weather"]
-    trend = forecast.get("trend") or profile["income_trend"]  # forecast wins, profile is fallback
-    if weather == "SHOCK" or risk["risk_score"] > 0.8:
+
+    weather = get_value(forecast, "weather")
+    trend = get_value(forecast, "trend") or get_value(
+        profile, "income_trend"
+    )
+
+    risk_score = float(get_value(risk, "risk_score", 0.0))
+    risk_level = get_value(risk, "risk_level")
+
+    if weather == "SHOCK" or risk_score > 0.8:
         return "SHOCK"
-    if trend == "RISING" and risk["risk_level"] != "HIGH":
-        # income climbing back — RECOVERY while the buffer is still thin, else NORMAL
-        return "RECOVERY" if profile["emergency_buffer"] < profile["monthly_income_avg"] * 0.3 else "NORMAL"
-    if weather == "WATCH" or risk["risk_level"] == "HIGH":
+
+    if trend == "RISING" and risk_level != "HIGH":
+        emergency_buffer = get_value(profile, "emergency_buffer", 0)
+        monthly_income_avg = get_value(profile, "monthly_income_avg", 0)
+
+        return (
+            "RECOVERY"
+            if emergency_buffer < monthly_income_avg * 0.3
+            else "NORMAL"
+        )
+
+    if weather == "WATCH" or risk_level == "HIGH":
         return "WATCH"
+
     return "NORMAL"
 
 
@@ -94,9 +113,9 @@ def safe_to_spend(profile: dict, forecast: dict, obligations: dict,
 
     Returns (daily, discretionary_cash, protected_cash).
     """
-    cash_available = profile["current_balance"]
-    conservative_income = forecast["lower_bound"]
-    required_obligations = obligations["total_upcoming"]
+    cash_available = get_value(profile, "current_balance", 0)
+    conservative_income = get_value(forecast, "lower_bound", 0)
+    required_obligations = get_value(obligations, "total_upcoming", 0)
 
     # never protect more cash than we actually expect to have on hand
     protected_cash = min(target_buffer, cash_available + conservative_income)
@@ -145,7 +164,11 @@ def resilience_score(profile: dict, essential_daily: int | None = None) -> dict:
     debt_burden is scored against a standard debt-service-to-income
     threshold rather than an arbitrary multiplier.
     """
-    p = profile
+    p = (
+        profile
+        if isinstance(profile, dict)
+        else profile.model_dump()
+    )
     inc_stab = round(CAP["income_stability"] *
                      (1 - _clamp(p["monthly_income_std"] / max(1, p["monthly_income_avg"]), 0, 1)))
     ess_daily = essential_daily if essential_daily and essential_daily > 0 else max(1, int(p["fixed_expenses"] / 30))
@@ -170,37 +193,59 @@ def resilience_score(profile: dict, essential_daily: int | None = None) -> dict:
     }
 
 
-def evaluate(profile: dict, risk: dict, forecast: dict, obligations: dict) -> dict:
+def evaluate(profile, risk, forecast, obligations) -> dict:
     mode = decide_mode(risk, forecast, profile)
-    ess_daily = obligations["essential_daily_spend"]
-    rdays = resilience_days(profile["emergency_buffer"], ess_daily)
-    target = buffer_target(ess_daily, risk["risk_level"])
-    gap = max(0, target - profile["emergency_buffer"])
-    daily, discretionary, protected_cash = safe_to_spend(profile, forecast, obligations, target, mode)
+
+    ess_daily = get_value(obligations, "essential_daily_spend", 0)
+
+    emergency_buffer = get_value(profile, "emergency_buffer", 0)
+    risk_level = get_value(risk, "risk_level", "MODERATE")
+    worker_id = get_value(profile, "worker_id", "")
+
+    rdays = resilience_days(emergency_buffer, ess_daily)
+
+    target = buffer_target(ess_daily, risk_level)
+
+    gap = max(0, target - emergency_buffer)
+
+    daily, discretionary, protected_cash = safe_to_spend(
+        profile,
+        forecast,
+        obligations,
+        target,
+        mode,
+    )
+
     breakdown = resilience_score(profile, ess_daily)
+
     score = sum(breakdown.values())
+
     recommended_save = 0 if mode == "SHOCK" else int(gap / 20)
 
     return {
-        "worker_id": profile["worker_id"],
+        "worker_id": worker_id,
         "safe_to_spend_daily": daily,
         "resilience_score": int(score),
         "resilience_days": rdays,
         "buffer_target": target,
-        "buffer_current": profile["emergency_buffer"],
+        "buffer_current": emergency_buffer,
         "recommended_save": recommended_save,
         "mode": mode,
         "wallet_allocation": {
             "daily": discretionary,
-            "bills": obligations["total_upcoming"],
-            "buffer": profile["emergency_buffer"],
-            "growth": 0 if mode in ("SHOCK", "WATCH") else int(profile["current_balance"] * 0.05),
+            "bills": get_value(obligations, "total_upcoming", 0),
+            "buffer": emergency_buffer,
+            "growth": (
+                0
+                if mode in ("SHOCK", "WATCH")
+                else int(get_value(profile, "current_balance", 0) * 0.05)
+            ),
         },
         "score_breakdown": breakdown,
     }
 
 
-def recommend(profile: dict, res: dict, forecast: dict, obligations: dict | None = None) -> list:
+def recommend(profile, res, forecast, obligations=None) -> list:
     """Mode-aware, contract-shaped recommendations (see contract #6).
 
     `obligations` is optional and defaults to None so existing 3-arg callers
@@ -210,9 +255,21 @@ def recommend(profile: dict, res: dict, forecast: dict, obligations: dict | None
     accurate days-to-shock estimate.
     """
     recs = []
-    mode = res["mode"]
-    essential_daily = (obligations["essential_daily_spend"] if obligations
-                       else max(1, int(profile["fixed_expenses"] / 30)))
+    profile_data = profile if isinstance(profile, dict) else profile.model_dump()
+    res_data = res if isinstance(res, dict) else res.model_dump()
+    forecast_data = forecast if isinstance(forecast, dict) else forecast.model_dump()
+    obligations_data = (
+        None if obligations is None
+        else obligations if isinstance(obligations, dict)
+        else obligations.model_dump()
+    )
+
+    mode = res_data["mode"]
+    essential_daily = (
+        obligations_data["essential_daily_spend"]
+        if obligations_data
+        else max(1, int(profile_data["fixed_expenses"] / 30))
+    )
 
     if mode == "SHOCK":
         # Income has collapsed: protect essentials, stop discretionary, don't borrow blindly.
@@ -227,20 +284,20 @@ def recommend(profile: dict, res: dict, forecast: dict, obligations: dict | None
                      "reason": "Take on debt only through Credit Guard, never as a first response"})
         return recs
 
-    if res["resilience_days"] < 7:
-        recs.append({"type": "SAVE", "priority": "HIGH", "amount": max(200, res["recommended_save"]),
+    if res_data["resilience_days"] < 7:
+        recs.append({"type": "SAVE", "priority": "HIGH", "amount": max(200, res_data["recommended_save"]),
                      "message": "Your safety buffer is critically low \u2014 prioritise saving",
-                     "reason": f"Only {res['resilience_days']} days of cover remaining"})
+                     "reason": f"Only {res_data['resilience_days']} days of cover remaining"})
 
     if mode == "RECOVERY":
-        amt = max(200, res["recommended_save"])
+        amt = max(200, res_data["recommended_save"])
         recs.append({"type": "SAVE", "priority": "HIGH", "amount": amt,
                      "message": f"Income is climbing back \u2014 rebuild your buffer with \u20b9{amt}",
                      "reason": "Recovering after a dip; restore cover before increasing spending"})
         return recs
 
-    if forecast["weather"] in ("WATCH", "SHOCK"):
-        amt = max(200, res["recommended_save"])
+    if forecast_data["weather"] in ("WATCH", "SHOCK"):
+        amt = max(200, res_data["recommended_save"])
         days = days_to_shock(forecast, essential_daily)
         if days is not None:
             reason = ("Income dip predicted in the next few hours" if days == 0
@@ -256,14 +313,16 @@ def recommend(profile: dict, res: dict, forecast: dict, obligations: dict | None
                      "message": "You don't need a loan right now",
                      "reason": "Your buffer + expected income can cover the shortfall"})
     else:
-        recs.append({"type": "SAVE", "priority": "MEDIUM", "amount": res["recommended_save"],
-                     "message": f"On track \u2014 save \u20b9{res['recommended_save']} toward your buffer",
+        recs.append({"type": "SAVE", "priority": "MEDIUM", "amount": res_data["recommended_save"],
+                     "message": f"On track \u2014 save \u20b9{res_data['recommended_save']} toward your buffer",
                      "reason": "Income is stable; build toward 30 resilience days"})
     return recs
 
 
 if __name__ == "__main__":
-    import json, os
+    import json, os, sys
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     demo = os.path.join(os.path.dirname(__file__), "..", "data", "demo")
     personas = {p["worker_id"]: p for p in json.load(open(os.path.join(demo, "personas.json")))["personas"]}
     risks = json.load(open(os.path.join(demo, "sample_risk.json")))

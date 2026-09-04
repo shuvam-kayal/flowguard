@@ -2,9 +2,12 @@
 Person 3 — Credit Guard. The waterfall: savings -> buffer -> delay -> future income -> credit.
 Real skeleton, contract-shaped output (CreditGuardResult, #7).
 """
+try:
+    from resilience.utils import get_value
+except ModuleNotFoundError:  # Support direct execution from the resilience folder
+    from utils import get_value
 
-
-def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: int) -> dict:
+def evaluate_credit(profile, resilience, forecast, requested: int) -> dict:
     """Credit Guard waterfall: savings -> buffer -> delay expense -> future income -> credit.
 
     Credit is the LAST resort, capped at what the worker can safely repay out
@@ -22,7 +25,10 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
     """
     requested = max(0, int(requested))
     savings = 0  # keep long-term savings untouched by default
-    buffer_available = resilience["buffer_current"]
+    buffer_available = get_value(resilience, "buffer_current", 0)
+    safe_to_spend_daily = get_value(resilience, "safe_to_spend_daily", 0)
+    next_30_days = get_value(forecast, "next_30_days", 0)
+    worker_id = get_value(profile, "worker_id", "")
 
     # 1) savings + buffer
     remaining = max(0, requested - savings - buffer_available)
@@ -33,12 +39,12 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
     remaining_after_delay = remaining - delay
 
     # 3) a slice of expected income can absorb part of the remaining need
-    future = min(remaining_after_delay, int(forecast["next_30_days"] * 0.10))
+    future = min(remaining_after_delay, int(next_30_days * 0.10))
     gap = max(0, remaining_after_delay - future)
 
     # 4) credit is the last resort, capped at what's safely repayable out of
     #    the worker's own already-conservative monthly discretionary surplus.
-    monthly_discretionary = resilience["safe_to_spend_daily"] * 30
+    monthly_discretionary = safe_to_spend_daily * 30
     safe_repay = max(0, int(monthly_discretionary * 0.20))  # 20% of already-safe surplus
     repayment_months = 3
     max_safe_credit = safe_repay * repayment_months
@@ -72,7 +78,7 @@ def evaluate_credit(profile: dict, resilience: dict, forecast: dict, requested: 
         msg = "Your buffer and expected income cover this \u2014 no credit needed."
 
     return {
-        "worker_id": profile["worker_id"],
+        "worker_id": worker_id,
         "requested_amount": requested,
         "buffer_available": buffer_available,
         "expected_shortfall": remaining,
