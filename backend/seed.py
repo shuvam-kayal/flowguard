@@ -43,7 +43,9 @@ def seed():
         # 1. Create User
         # Filter p_data to match FinancialProfile / User model
         profile_data = {k: v for k, v in p_data.items() if hasattr(User, k)}
-        user = User(**profile_data, hashed_password=default_password_hash)
+        demo_number = 9000000000 + int(worker_id[1:])
+        user = User(**profile_data, email=f"{worker_id.lower()}@demo.flowguard.local",
+                    phone=str(demo_number), hashed_password=default_password_hash)
         db.add(user)
 
         # 2. Create Obligations
