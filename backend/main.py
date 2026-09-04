@@ -151,7 +151,7 @@ def resilience_endpoint(payload: dict):
     forecast = ForecastResult.model_validate(payload["forecast"])
     obligations = ObligationSummary.model_validate(payload["obligations"])
     result = evaluate(profile, risk, forecast, obligations)
-    return {**result.model_dump(), "recommendations": [item.model_dump() for item in recommend(profile, result, forecast)]}
+    return {**result.model_dump(), "recommendations": [item.model_dump() for item in recommend(profile, result, forecast, obligations)]}
 
 
 @app.post("/credit/evaluate")

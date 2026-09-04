@@ -1,13 +1,28 @@
 """
-Person 3 — Credit Guard. The waterfall: savings -> buffer -> delay -> future income -> credit.
-Real skeleton, contract-shaped output (CreditGuardResult, #7).
+Person 3 — Credit Guard.
+
+Returns a dict-compatible CreditGuardOutput so callers can use either:
+    result["decision"]
+or:
+    result.decision
+
+The payload remains validated against CreditGuardResult at API boundaries.
 """
 try:
     from resilience.utils import get_value
 except ModuleNotFoundError:  # Support direct execution from the resilience folder
     from utils import get_value
 
-def evaluate_credit(profile, resilience, forecast, requested: int) -> dict:
+class CreditGuardOutput(dict):
+    """Dict-compatible result that also supports attribute access."""
+
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
+def evaluate_credit(profile, resilience, forecast, requested: int) -> CreditGuardOutput:
     """Credit Guard waterfall: savings -> buffer -> delay expense -> future income -> credit.
 
     Credit is the LAST resort, capped at what the worker can safely repay out
@@ -77,7 +92,8 @@ def evaluate_credit(profile, resilience, forecast, requested: int) -> dict:
     else:
         msg = "Your buffer and expected income cover this \u2014 no credit needed."
 
-    return {
+    return CreditGuardOutput(
+    {
         "worker_id": worker_id,
         "requested_amount": requested,
         "buffer_available": buffer_available,
@@ -86,11 +102,32 @@ def evaluate_credit(profile, resilience, forecast, requested: int) -> dict:
         "safe_monthly_repayment": safe_repay,
         "decision": decision,
         "waterfall": [
-            {"source": "savings", "amount": savings, "used": savings > 0},
-            {"source": "emergency_buffer", "amount": buffer_available, "used": buffer_available > 0},
-            {"source": "delay_expense", "amount": delay, "used": delay > 0},
-            {"source": "future_income", "amount": future, "used": future > 0},
-            {"source": "credit", "amount": credit, "used": credit > 0},
+            {
+                "source": "savings",
+                "amount": savings,
+                "used": savings > 0,
+            },
+            {
+                "source": "emergency_buffer",
+                "amount": buffer_available,
+                "used": buffer_available > 0,
+            },
+            {
+                "source": "delay_expense",
+                "amount": delay,
+                "used": delay > 0,
+            },
+            {
+                "source": "future_income",
+                "amount": future,
+                "used": future > 0,
+            },
+            {
+                "source": "credit",
+                "amount": credit,
+                "used": credit > 0,
+            },
         ],
         "message": msg,
     }
+)
