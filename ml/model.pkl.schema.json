@@ -9,12 +9,10 @@
     "payment_frequency_variance",
     "essential_spend_ratio"
   ],
-  "feature_hash": "87df1f9587fd14b4",
   "classes": [
     "HIGH",
     "LOW",
     "MODERATE"
   ],
-  "rows": 2500,
-  "version": 2
+  "rows": 2500
 }
