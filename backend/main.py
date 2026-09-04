@@ -23,11 +23,16 @@ from constants import (
     SHOCK_RISK_INCREMENT, SHOCK_MAX_PROBABILITY, SHOCK_MAX_RISK_SCORE,
     SHOCK_SIMULATION_SPEND_FACTOR,
 )
-from backend.database import get_db, engine, Base
+from backend.database import get_db, engine, Base, initialize_database
 from backend.models import (
     User, Obligation, RiskResultModel, ForecastResultModel, 
     ResilienceResultModel, Recommendation as RecommendationModel
 )
+from backend.models import Transaction, IncomeRecord, Expense
+from backend.auth.router import router as auth_router
+from backend.auth.dependencies import get_current_user
+from backend.schemas.api import ProfileUpdate, TransactionCreate, IncomeCreate, ExpenseCreate, ObligationCreate
+from backend.services.recompute import recompute_worker
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,6 +43,9 @@ app.add_middleware(
     allow_origins=_origins or ["*"],
     allow_methods=["*"], allow_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+initialize_database()
 
 # ---- toggle: use mocks or real modules -------------------------------------
 # Set to False to read pre-computed risk/resilience from the DB. 
@@ -103,7 +111,7 @@ def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
         profile = FinancialProfile(**profile_data)
 
         history = get_income_history(worker_id, db)
-        risk = predict_risk(profile)
+        risk = predict_risk(profile, history)
         forecast = forecast_income(profile, history)
         resilience = evaluate(profile, risk, forecast, obl_summary)
         recs = recommend(profile, resilience, forecast, obl_summary)
@@ -113,6 +121,143 @@ def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
         risk=risk, forecast=forecast, resilience=resilience,
         obligations=obl_summary, recommendations=recs,
     )
+
+
+def _profile_dict(user: User) -> dict:
+    return {c.name: getattr(user, c.name) for c in user.__table__.columns
+            if c.name not in {"hashed_password"}}
+
+
+def _refresh(user: User, db: Session):
+    recompute_worker(user.worker_id, db)
+    db.commit()
+
+
+@app.get("/api/profile/me")
+def profile_me(current_user: User = Depends(get_current_user)):
+    return _profile_dict(current_user)
+
+
+@app.put("/api/profile/me")
+def update_profile(payload: ProfileUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    for key, value in payload.model_dump(exclude_unset=True).items():
+        setattr(current_user, key, value)
+    if current_user.monthly_income_avg:
+        current_user.expense_to_income_ratio = round(current_user.total_monthly_expenses / current_user.monthly_income_avg, 2)
+    _refresh(current_user, db)
+    return _profile_dict(current_user)
+
+
+def _owned_query(model, user: User, db: Session):
+    return db.query(model).filter(model.worker_id == user.worker_id)
+
+
+@app.get("/api/transactions")
+def list_transactions(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return _owned_query(Transaction, current_user, db).order_by(Transaction.date.desc(), Transaction.id.desc()).all()
+
+
+@app.post("/api/transactions")
+def add_transaction(payload: TransactionCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = Transaction(worker_id=current_user.worker_id, **payload.model_dump())
+    db.add(item)
+    if item.type.upper() == "CREDIT": current_user.current_balance += item.amount
+    else: current_user.current_balance = max(0, current_user.current_balance - item.amount)
+    _refresh(current_user, db)
+    return item
+
+
+@app.delete("/api/transactions/{item_id}")
+def delete_transaction(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = _owned_query(Transaction, current_user, db).filter(Transaction.id == item_id).first()
+    if not item: raise HTTPException(404, "Transaction not found")
+    db.delete(item); db.flush(); _refresh(current_user, db)
+    return {"deleted": item_id}
+
+
+@app.get("/api/income")
+def list_income(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return _owned_query(IncomeRecord, current_user, db).order_by(IncomeRecord.date.desc()).all()
+
+
+@app.post("/api/income")
+def add_income(payload: IncomeCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = IncomeRecord(worker_id=current_user.worker_id, amount=payload.amount, date=payload.date)
+    db.add(item); current_user.current_balance += item.amount; db.flush(); _refresh(current_user, db)
+    return item
+
+
+@app.delete("/api/income/{item_id}")
+def delete_income(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = _owned_query(IncomeRecord, current_user, db).filter(IncomeRecord.id == item_id).first()
+    if not item: raise HTTPException(404, "Income record not found")
+    db.delete(item); db.flush(); _refresh(current_user, db)
+    return {"deleted": item_id}
+
+
+@app.get("/api/expenses")
+def list_expenses(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return _owned_query(Expense, current_user, db).order_by(Expense.date.desc()).all()
+
+
+@app.post("/api/expenses")
+def add_expense(payload: ExpenseCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = Expense(worker_id=current_user.worker_id, **payload.model_dump())
+    db.add(item); current_user.current_balance = max(0, current_user.current_balance - item.amount)
+    current_user.total_monthly_expenses += item.amount
+    current_user.variable_expenses += item.amount
+    db.flush(); _refresh(current_user, db)
+    return item
+
+
+@app.delete("/api/expenses/{item_id}")
+def delete_expense(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = _owned_query(Expense, current_user, db).filter(Expense.id == item_id).first()
+    if not item: raise HTTPException(404, "Expense not found")
+    current_user.total_monthly_expenses = max(0, current_user.total_monthly_expenses - item.amount)
+    current_user.variable_expenses = max(0, current_user.variable_expenses - item.amount)
+    db.delete(item); db.flush(); _refresh(current_user, db)
+    return {"deleted": item_id}
+
+
+@app.get("/api/obligations")
+def list_obligations(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return _owned_query(Obligation, current_user, db).all()
+
+
+@app.post("/api/obligations")
+def add_obligation(payload: ObligationCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = Obligation(worker_id=current_user.worker_id, **payload.model_dump())
+    db.add(item); db.flush(); _refresh(current_user, db)
+    return item
+
+
+@app.put("/api/obligations/{item_id}")
+def update_obligation(item_id: int, payload: ObligationCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = _owned_query(Obligation, current_user, db).filter(Obligation.id == item_id).first()
+    if not item: raise HTTPException(404, "Obligation not found")
+    for key, value in payload.model_dump().items(): setattr(item, key, value)
+    db.flush(); _refresh(current_user, db)
+    return item
+
+
+@app.delete("/api/obligations/{item_id}")
+def delete_obligation(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = _owned_query(Obligation, current_user, db).filter(Obligation.id == item_id).first()
+    if not item: raise HTTPException(404, "Obligation not found")
+    db.delete(item); db.flush(); _refresh(current_user, db)
+    return {"deleted": item_id}
+
+
+@app.get("/api/dashboard")
+def current_dashboard(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> DashboardResponse:
+    return get_dashboard(current_user.worker_id, db)
+
+
+@app.post("/api/dashboard/recompute")
+def refresh_dashboard(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> DashboardResponse:
+    _refresh(current_user, db)
+    return get_dashboard(current_user.worker_id, db)
 
 
 @app.get("/")
@@ -127,24 +272,26 @@ def list_workers(db: Session = Depends(get_db)):
 
 
 @app.get("/worker/{worker_id}/dashboard")
-def worker_dashboard(worker_id: str, db: Session = Depends(get_db)) -> DashboardResponse:
+def worker_dashboard(worker_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> DashboardResponse:
+    if current_user.worker_id != worker_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this dashboard")
     return get_dashboard(worker_id, db)
 
 
 @app.post("/ml/risk")
-def risk_endpoint(payload: dict):
+def risk_endpoint(payload: dict, current_user: User = Depends(get_current_user)):
     from ml.predict import predict_risk
     return predict_risk(FinancialProfile.model_validate(payload.get("profile", payload)), payload.get("history"))
 
 
 @app.post("/forecast/income")
-def forecast_endpoint(payload: dict):
+def forecast_endpoint(payload: dict, current_user: User = Depends(get_current_user)):
     from forecast.predict import forecast_income
     return forecast_income(FinancialProfile.model_validate(payload.get("profile", payload)), payload.get("history"))
 
 
 @app.post("/resilience/evaluate")
-def resilience_endpoint(payload: dict):
+def resilience_endpoint(payload: dict, current_user: User = Depends(get_current_user)):
     from resilience.engine import evaluate, recommend
     profile = FinancialProfile.model_validate(payload["profile"])
     risk = RiskResult.model_validate(payload["risk"])
@@ -155,8 +302,10 @@ def resilience_endpoint(payload: dict):
 
 
 @app.post("/credit/evaluate")
-def credit_evaluate(payload: dict, db: Session = Depends(get_db)):
+def credit_evaluate(payload: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wid = payload.get("worker_id", "W001")
+    if current_user.worker_id != wid:
+        raise HTTPException(status_code=403, detail="Not authorized")
     dashboard = get_dashboard(wid, db)
     from resilience.credit_guard import evaluate_credit
     
@@ -164,7 +313,11 @@ def credit_evaluate(payload: dict, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(404, f"Unknown worker {wid}")
     
-    profile_data = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+    profile_data = {
+        c.name: getattr(user, c.name)
+        for c in user.__table__.columns
+        if c.name not in {"email", "phone", "hashed_password"}
+    }
     profile = FinancialProfile(**profile_data)
     
     requested = max(0, int(payload.get("requested_amount", 0)))
@@ -221,13 +374,17 @@ def _apply_recovery(dash: DashboardResponse) -> DashboardResponse:
 
 
 @app.post("/simulate/shock")
-def simulate_shock(payload: dict, db: Session = Depends(get_db)):
+def simulate_shock(payload: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wid = payload.get("worker_id", "W001")
+    if current_user.worker_id != wid:
+        raise HTTPException(status_code=403, detail="Not authorized")
     factor = payload.get("factor", SHOCK_DEFAULT_FACTOR)
     return _apply_shock(get_dashboard(wid, db), factor)
 
 
 @app.post("/simulate/recovery")
-def simulate_recovery(payload: dict, db: Session = Depends(get_db)):
+def simulate_recovery(payload: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wid = payload.get("worker_id", "W001")
+    if current_user.worker_id != wid:
+        raise HTTPException(status_code=403, detail="Not authorized")
     return _apply_recovery(get_dashboard(wid, db))

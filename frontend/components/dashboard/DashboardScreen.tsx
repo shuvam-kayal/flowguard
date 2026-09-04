@@ -3,6 +3,7 @@
 import { useScenario } from "@/components/layout/ScenarioProvider";
 import { SafeToSpendCard } from "./SafeToSpendCard";
 import { ResilienceScore } from "./ResilienceScore";
+import { RiskCard } from "./RiskCard";
 import { FinancialWeather } from "./FinancialWeather";
 import { CashFlowChart } from "./CashFlowChart";
 import { UpcomingObligations } from "./UpcomingObligations";
@@ -20,7 +21,7 @@ export function DashboardScreen() {
     return <ErrorState message={error ?? "No dashboard data found."} onRetry={refetch} />;
   }
 
-  const { resilience, forecast, worker, obligations, recommendations } = data;
+  const { resilience, forecast, risk, worker, obligations, recommendations } = data;
   const chartPoints = adaptForecastPoints(forecast.daily_forecast);
   const isShock = resilience.mode === "SHOCK";
   const firstName = worker.name.split(" ")[0];
@@ -36,8 +37,8 @@ export function DashboardScreen() {
         FlowGuard helps you protect cash flow before stress arrives.
       </p>
 
-      {/* Row 1: Safe-to-spend + Health + Weather */}
-      <div className="mt-7 grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
+      {/* Row 1: Keep the primary decision cards balanced. */}
+      <div className="mt-7 grid items-start gap-5 xl:grid-cols-[1.15fr_.85fr]">
         <SafeToSpendCard resilience={resilience} />
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
           <ResilienceScore resilience={resilience} />
@@ -45,16 +46,17 @@ export function DashboardScreen() {
         </div>
       </div>
 
-      {/* Row 2: Chart + Obligations */}
+      {/* Row 2: Risk and forecast share the same visual band. */}
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
         <CashFlowChart points={chartPoints} />
-        <UpcomingObligations summary={obligations} />
+        <RiskCard risk={risk} />
       </div>
 
-      {/* Row 3: Buffer progress + Actions */}
+      {/* Row 3: Obligations and buffer share one horizontal row. */}
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <UpcomingObligations summary={obligations} />
         {/* Emergency buffer card */}
-        <section className="panel">
+        <section className="panel lg:col-span-1">
           <p className="eyebrow">Emergency buffer</p>
           <div className="mt-3 flex items-end justify-between">
             <h2 className="text-2xl font-extrabold">
@@ -94,7 +96,9 @@ export function DashboardScreen() {
           </p>
         </section>
 
-        <ActionCenter recommendations={recommendations} shock={isShock} />
+        <div className="lg:col-span-2">
+          <ActionCenter recommendations={recommendations} shock={isShock} />
+        </div>
       </div>
     </div>
   );
