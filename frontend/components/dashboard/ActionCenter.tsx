@@ -1,4 +1,5 @@
 import { ArrowRight, AlertTriangle, TrendingUp, BookOpen, CreditCard, Shield } from "lucide-react";
+import Link from "next/link";
 import type { Recommendation } from "@/types/dashboard";
 import { formatINR } from "@/lib/formatters";
 
@@ -81,9 +82,9 @@ export function ActionCenter({ recommendations, shock }: ActionCenterProps) {
         })}
       </div>
 
-      <button className="btn-primary mt-5 text-sm">
+      <Link href="/resilience" className="btn-primary mt-5 inline-flex items-center gap-1 text-sm">
         Review full plan <ArrowRight size={14} />
-      </button>
+      </Link>
     </section>
   );
 }

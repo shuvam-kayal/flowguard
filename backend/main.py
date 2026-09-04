@@ -103,7 +103,7 @@ def get_dashboard(worker_id: str, db: Session) -> DashboardResponse:
         profile = FinancialProfile(**profile_data)
 
         history = get_income_history(worker_id, db)
-        risk = predict_risk(profile)
+        risk = predict_risk(profile, history)
         forecast = forecast_income(profile, history)
         resilience = evaluate(profile, risk, forecast, obl_summary)
         recs = recommend(profile, resilience, forecast, obl_summary)
