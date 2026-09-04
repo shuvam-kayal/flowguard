@@ -17,6 +17,22 @@ import type {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export function notifyAuthChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("flowguard-auth-changed"));
+  }
+}
+
+export function setAuthToken(token: string) {
+  localStorage.setItem("flowguard_token", token);
+  notifyAuthChanged();
+}
+
+export function clearAuthToken() {
+  localStorage.removeItem("flowguard_token");
+  notifyAuthChanged();
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {

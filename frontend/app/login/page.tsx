@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiLogin } from "@/lib/api";
+import { apiLogin, setAuthToken } from "@/lib/api";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     try {
       const data = await apiLogin(phone, password);
-      localStorage.setItem("flowguard_token", data.access_token);
+      setAuthToken(data.access_token);
       router.push("/profile");
     } catch (err: any) {
       setError(err.message || "Failed to login. Check your credentials.");

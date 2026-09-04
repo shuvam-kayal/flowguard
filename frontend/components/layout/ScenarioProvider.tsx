@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDashboardForScenario, apiMe } from "@/lib/api";
 import type { DashboardResponse, Scenario } from "@/types/dashboard";
 
@@ -24,11 +24,28 @@ const ScenarioContext = createContext<ScenarioContextValue | null>(null);
 
 export function ScenarioProvider({ children }: { children: React.ReactNode }) {
   const [scenario, setScenario] = useState<Scenario>("NORMAL");
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const handleAuthChanged = () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+    };
+
+    window.addEventListener("flowguard-auth-changed", handleAuthChanged);
+
+    return () => {
+      window.removeEventListener("flowguard-auth-changed", handleAuthChanged);
+    };
+  }, [queryClient]);
 
   // Fetch current user
-  const { data: user, isLoading: isLoadingUser } = useQuery({
+  const {
+    data: user,
+    isLoading: isLoadingUser,
+    isFetching: isFetchingUser,
+  } = useQuery({
     queryKey: ["me"],
-    queryFn: () => apiMe(),
+    queryFn: apiMe,
     retry: false, // If it fails, they are probably not logged in
   });
 
@@ -62,7 +79,7 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
         scenario,
         setScenario,
         workerId,
-        loading: isLoadingUser || isLoadingDashboard || isFetching,
+        loading: isLoadingUser || isFetchingUser || isLoadingDashboard || isFetching,
         error,
         refetch,
       }}

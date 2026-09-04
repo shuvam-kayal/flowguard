@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiSignup } from "@/lib/api";
+import { apiSignup, setAuthToken } from "@/lib/api";
 import Link from "next/link";
 
 export default function SignupPage() {
@@ -27,7 +27,7 @@ export default function SignupPage() {
 
     try {
       const data = await apiSignup(email, phone, name, occupation, password);
-      localStorage.setItem("flowguard_token", data.access_token);
+      setAuthToken(data.access_token);
       router.push("/profile");
     } catch (err: any) {
       setError(err.message || "Failed to sign up. Try again.");
