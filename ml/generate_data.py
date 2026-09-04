@@ -39,7 +39,7 @@ def generate_dataset(rows: int = 2500, seed: int = 42) -> pd.DataFrame:
     )
     frame["risk_label"] = pd.cut(
         risk_signal,
-        bins=[-np.inf, 0.0, 0.30, np.inf],
+        bins=[-np.inf, 0.65, 1.45, np.inf],
         labels=["LOW", "MODERATE", "HIGH"],
     ).astype(str)
     return frame
