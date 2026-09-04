@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardForScenario } from "@/lib/api";
+import { getDashboardForScenario, apiMe } from "@/lib/api";
 import { DEFAULT_WORKER_ID } from "@/lib/constants";
 import type { DashboardResponse, Scenario } from "@/types/dashboard";
 
@@ -25,19 +25,26 @@ const ScenarioContext = createContext<ScenarioContextValue | null>(null);
 
 export function ScenarioProvider({ children }: { children: React.ReactNode }) {
   const [scenario, setScenario] = useState<Scenario>("NORMAL");
-  // Worker is fixed at DEFAULT_WORKER_ID for this demo. If multi-worker support
-  // is needed, lift this into a separate WorkerProvider or URL param.
-  const workerId = DEFAULT_WORKER_ID;
+
+  // Fetch current user
+  const { data: user, isLoading: isLoadingUser } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiMe(),
+    retry: false, // If it fails, they are probably not logged in
+  });
+
+  const workerId = user?.worker_id || DEFAULT_WORKER_ID;
 
   const {
     data = null,
     isFetching,
-    isLoading,
+    isLoading: isLoadingDashboard,
     error: queryError,
     refetch,
   } = useQuery({
     queryKey: ["dashboard", workerId, scenario],
     queryFn: () => getDashboardForScenario(workerId, scenario),
+    enabled: !!user, // Only fetch dashboard if we know who the user is
   });
 
   const error =
@@ -54,7 +61,7 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
         scenario,
         setScenario,
         workerId,
-        loading: isLoading || isFetching,
+        loading: isLoadingUser || isLoadingDashboard || isFetching,
         error,
         refetch,
       }}

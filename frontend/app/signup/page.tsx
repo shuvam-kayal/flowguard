@@ -2,27 +2,29 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiLogin } from "@/lib/api";
+import { apiSignup } from "@/lib/api";
 import Link from "next/link";
 
-export default function LoginPage() {
-  const [workerId, setWorkerId] = useState("W001");
-  const [password, setPassword] = useState("password123");
+export default function SignupPage() {
+  const [workerId, setWorkerId] = useState("");
+  const [name, setName] = useState("");
+  const [occupation, setOccupation] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const data = await apiLogin(workerId, password);
+      const data = await apiSignup(workerId, name, occupation, password);
       localStorage.setItem("flowguard_token", data.access_token);
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Failed to login. Check your credentials.");
+      setError(err.message || "Failed to sign up. Try again.");
     } finally {
       setLoading(false);
     }
@@ -43,15 +45,15 @@ export default function LoginPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
               />
             </svg>
           </div>
-          <h1 className="mt-4 text-2xl font-extrabold text-[#16231a]">FlowGuard</h1>
-          <p className="muted mt-2 text-sm">Sign in to your financial dashboard</p>
+          <h1 className="mt-4 text-2xl font-extrabold text-[#16231a]">Create Account</h1>
+          <p className="muted mt-2 text-sm">Join FlowGuard and manage your gig finances</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleSignup} className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
               {error}
@@ -59,7 +61,7 @@ export default function LoginPage() {
           )}
           
           <div>
-            <label className="mb-2 block text-sm font-bold text-[#16231a]">
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">
               Worker ID
             </label>
             <input
@@ -67,12 +69,41 @@ export default function LoginPage() {
               value={workerId}
               onChange={(e) => setWorkerId(e.target.value)}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="e.g. W123"
               required
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-bold text-[#16231a]">
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="e.g. Rahul Kumar"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">
+              Occupation
+            </label>
+            <input
+              type="text"
+              value={occupation}
+              onChange={(e) => setOccupation(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="e.g. Delivery Partner"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#16231a]">
               Password
             </label>
             <input
@@ -89,14 +120,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-[#16231a] px-4 py-3 font-bold text-white transition-colors hover:bg-black disabled:opacity-50 mt-4"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Simulating Bank Sync..." : "Sign Up & Sync Bank"}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-gray-500">Don't have an account? </span>
-          <Link href="/signup" className="font-bold text-black hover:underline">
-            Sign up
+          <span className="text-gray-500">Already have an account? </span>
+          <Link href="/login" className="font-bold text-black hover:underline">
+            Sign in
           </Link>
         </div>
       </div>

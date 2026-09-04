@@ -10,3 +10,9 @@ class TokenData(BaseModel):
 class LoginRequest(BaseModel):
     worker_id: str
     password: str
+
+class SignupRequest(BaseModel):
+    worker_id: str
+    name: str
+    occupation: str
+    password: str

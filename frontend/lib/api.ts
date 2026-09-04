@@ -48,6 +48,19 @@ export async function apiLogin(workerId: string, password: string): Promise<{ ac
   });
 }
 
+/** POST /api/auth/signup — registers a new worker and returns a JWT token */
+export async function apiSignup(workerId: string, name: string, occupation: string, password: string): Promise<{ access_token: string; token_type: string }> {
+  return apiFetch<{ access_token: string; token_type: string }>("/api/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ worker_id: workerId, name, occupation, password }),
+  });
+}
+
+/** GET /api/auth/me — gets the current logged in user */
+export async function apiMe(): Promise<{ worker_id: string; name: string; occupation: string }> {
+  return apiFetch<{ worker_id: string; name: string; occupation: string }>("/api/auth/me");
+}
+
 /**
  * Converts the backend's `daily_forecast` array (ISO date strings) into
  * chart-friendly points for Recharts.
